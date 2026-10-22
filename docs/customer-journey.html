@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="The RenovShield customer journey from three quotations to handover, and the three points where the product holds payment back.">
+<style>:root{color-scheme:light dark}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Quote to Handover</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+<style>
+:root {
+  --bg: #e9ecea;
+  --surface: #ffffff;
+  --sunk: #f1f4f2;
+  --ink: #10201a;
+  --muted: #586860;
+  --line: #ccd6d1;
+  --hair: #dfe6e2;
+  --accent: #1d5a4c;
+  --accent-hi: #24705f;
+  --accent-ink: #ffffff;
+  --accent-soft: #dbeae4;
+  --rel: #1b6b43;     --rel-bg: #d7ecdd;
+  --held: #8a5300;    --held-bg: #fae6c2;
+  --block: #a8261d;   --block-bg: #f7dad6;
+  --f-d: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-b: "Source Sans 3", "Segoe UI", Arial, sans-serif;
+  --f-m: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0d1412; --surface: #151e1a; --sunk: #1c2723;
+  --ink: #e2ebe6; --muted: #92a69d; --line: #2a3832; --hair: #222e29;
+  --accent: #79c4ab; --accent-hi: #93d6bf; --accent-ink: #0a1714; --accent-soft: #1f382f;
+  --rel: #74cf9c; --rel-bg: #163425;
+  --held: #edbb6a; --held-bg: #392c14;
+  --block: #f49b91; --block-bg: #40201c;
+  color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --bg: #0d1412; --surface: #151e1a; --sunk: #1c2723;
+  --ink: #e2ebe6; --muted: #92a69d; --line: #2a3832; --hair: #222e29;
+  --accent: #79c4ab; --accent-hi: #93d6bf; --accent-ink: #0a1714; --accent-soft: #1f382f;
+  --rel: #74cf9c; --rel-bg: #163425;
+  --held: #edbb6a; --held-bg: #392c14;
+  --block: #f49b91; --block-bg: #40201c;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 1.0625rem/1.6 var(--f-b);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4 { font-family: var(--f-d); margin: 0; line-height: 1.1; letter-spacing: -0.02em; text-wrap: balance; }
+p { margin: 0; }
+.wrap { max-width: 1060px; margin: 0 auto; padding-inline: 22px; }
+.num { font-family: var(--f-m); font-variant-numeric: tabular-nums; }
+.eyebrow {
+  font-family: var(--f-m); font-size: .72rem; font-weight: 500;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--accent);
+}
+
+/* ---------- masthead ---------- */
+.mast { border-bottom: 2px solid var(--ink); background: var(--surface); }
+.mast .wrap { padding-block: 44px 34px; display: flex; flex-direction: column; gap: 16px; }
+.mast h1 { font-size: clamp(2.3rem, 6vw, 3.9rem); font-weight: 800; }
+.mast .lede { font-size: 1.2rem; color: var(--muted); max-width: 34em; }
+.thesis {
+  font-family: var(--f-d); font-size: clamp(1.05rem, 2.2vw, 1.3rem); font-weight: 600;
+  line-height: 1.35; border-left: 4px solid var(--accent);
+  padding: 2px 0 2px 16px; max-width: 30em;
+}
+
+.facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 6px; }
+.facts div { background: var(--surface); padding: 14px 16px; display: flex; flex-direction: column; gap: 3px; }
+.facts dt { font-family: var(--f-m); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.facts dd { margin: 0; font-family: var(--f-d); font-weight: 700; font-size: 1.02rem; }
+@media (max-width: 620px) { .facts { grid-template-columns: 1fr; } }
+
+/* ---------- sections ---------- */
+section { padding-block: 52px; }
+section + section { border-top: 1px solid var(--hair); }
+.sec-head { display: flex; flex-direction: column; gap: 8px; margin-bottom: 26px; max-width: 46em; }
+.sec-head h2 { font-size: clamp(1.5rem, 3.2vw, 2.1rem); font-weight: 800; }
+.sec-head p { color: var(--muted); }
+
+/* ---------- contract release rail ---------- */
+.rail { display: grid; grid-template-columns: 20fr 20fr 20fr 25fr 15fr; gap: 3px; height: 30px; margin-bottom: 4px; }
+.rail span { border-radius: 2px; }
+.rail .s-rel { background: var(--rel); }
+.rail .s-held { background: repeating-linear-gradient(45deg, var(--held) 0 5px, transparent 5px 10px), var(--held-bg); }
+.rail .s-block { background: repeating-linear-gradient(45deg, var(--block) 0 5px, transparent 5px 10px), var(--block-bg); }
+.rail-key { display: flex; flex-wrap: wrap; gap: 18px; font-size: .86rem; color: var(--muted); margin-bottom: 26px; }
+.rail-key span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 7px; vertical-align: -1px; }
+.rail-key .k-rel::before { background: var(--rel); }
+.rail-key .k-held::before { background: repeating-linear-gradient(45deg, var(--held) 0 4px, transparent 4px 8px), var(--held-bg); }
+.rail-key .k-block::before { background: repeating-linear-gradient(45deg, var(--block) 0 4px, transparent 4px 8px), var(--block-bg); }
+
+.sched { width: 100%; border-collapse: collapse; }
+.sched caption { text-align: left; font-size: .88rem; color: var(--muted); padding-bottom: 10px; }
+.sched th, .sched td { text-align: left; padding: 11px 12px; border-bottom: 1px solid var(--hair); vertical-align: top; }
+.sched thead th {
+  font-family: var(--f-m); font-size: .68rem; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--line);
+}
+.sched td:first-child { font-weight: 600; }
+.sched .pct, .sched .amt { font-family: var(--f-m); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.sched .gate { color: var(--muted); font-size: .95rem; }
+.sched tbody tr:last-child td { border-bottom: 0; }
+.sched tfoot td { border-top: 2px solid var(--ink); border-bottom: 0; font-weight: 700; padding-top: 12px; }
+.schedwrap { overflow-x: auto; }
+.sched { min-width: 620px; }
+
+.chip {
+  display: inline-block; font-family: var(--f-m); font-size: .7rem; font-weight: 500;
+  letter-spacing: .05em; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; white-space: nowrap;
+}
+.c-rel { background: var(--rel-bg); color: var(--rel); }
+.c-held { background: var(--held-bg); color: var(--held); }
+.c-block { background: var(--block-bg); color: var(--block); }
+.c-acc { background: var(--accent-soft); color: var(--accent); }
+
+/* ---------- stages ---------- */
+.stage { display: grid; grid-template-columns: 184px 1fr; gap: 30px; align-items: start; }
+.stage + .stage { margin-top: 10px; padding-top: 34px; border-top: 1px solid var(--hair); }
+.stage-rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 18px); display: flex; flex-direction: column; gap: 7px; }
+.stage-rail .when { font-family: var(--f-m); font-size: .74rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.stage-rail h3 { font-size: 1.32rem; font-weight: 800; }
+.stage-rail .dur { font-size: .9rem; color: var(--muted); }
+.screens { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+.screens b {
+  font-family: var(--f-m); font-size: .72rem; font-weight: 500; padding: 3px 7px;
+  border: 1px solid var(--line); border-radius: 3px; color: var(--muted); white-space: nowrap;
+}
+@media (max-width: 760px) {
+  .stage { grid-template-columns: 1fr; gap: 18px; }
+  .stage-rail { position: static; }
+}
+
+.beats { list-style: none; margin: 0 0 20px; padding: 0; display: flex; flex-direction: column; gap: 14px; counter-reset: beat; }
+.beats li { display: grid; grid-template-columns: 26px 1fr; gap: 12px; align-items: start; }
+.beats li::before {
+  counter-increment: beat; content: counter(beat);
+  font-family: var(--f-m); font-size: .74rem; font-weight: 600;
+  width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--sunk); color: var(--muted); border: 1px solid var(--line);
+}
+.beats b { font-weight: 700; display: block; }
+.beats p { color: var(--muted); font-size: .98rem; }
+.beats .said {
+  display: block; margin-top: 5px; padding-left: 12px; border-left: 2px solid var(--line);
+  font-family: var(--f-m); font-size: .86rem; color: var(--muted); line-height: 1.5;
+}
+
+.gatebox { border: 1px solid var(--line); border-left: 5px solid var(--accent); background: var(--surface); padding: 16px 18px; display: flex; flex-direction: column; gap: 7px; }
+.gatebox.held { border-left-color: var(--held); }
+.gatebox.block { border-left-color: var(--block); }
+.gatebox .lbl { font-family: var(--f-m); font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.gatebox h4 { font-size: 1.08rem; font-weight: 700; }
+.gatebox p { font-size: .97rem; color: var(--muted); }
+
+/* ---------- the arithmetic callout ---------- */
+.compare { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin: 18px 0; }
+.compare div { background: var(--surface); padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; }
+.compare .firm { font-family: var(--f-d); font-weight: 700; font-size: 1rem; }
+.compare .head { font-family: var(--f-m); font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.compare .big { font-family: var(--f-m); font-size: 1.4rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+.compare .note { font-size: .88rem; color: var(--muted); }
+.compare .strike { text-decoration: line-through; color: var(--muted); font-family: var(--f-m); font-size: .9rem; }
+@media (max-width: 700px) { .compare { grid-template-columns: 1fr; } }
+
+/* ---------- friction ---------- */
+.friction { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+.friction li { background: var(--surface); padding: 16px 18px; display: grid; grid-template-columns: 30px 1fr auto; gap: 8px 14px; align-items: baseline; }
+.friction .rank { font-family: var(--f-m); font-size: .82rem; color: var(--muted); }
+.friction b { font-family: var(--f-d); font-weight: 700; font-size: 1.04rem; }
+.friction p { grid-column: 2 / -1; color: var(--muted); font-size: .96rem; }
+.friction .where { grid-column: 2 / -1; font-family: var(--f-m); font-size: .74rem; color: var(--muted); letter-spacing: .04em; }
+@media (max-width: 560px) {
+  .friction li { grid-template-columns: 26px 1fr; }
+  .friction .chip { grid-column: 2; justify-self: start; }
+}
+
+/* ---------- footer ---------- */
+.foot { border-top: 2px solid var(--ink); background: var(--surface); }
+.foot .wrap { padding-block: 26px 34px; display: flex; flex-direction: column; gap: 10px; }
+.foot p { font-size: .93rem; color: var(--muted); max-width: 60em; }
+.foot strong { color: var(--ink); font-weight: 700; }
+</style>
+</head>
+<body>
+<header class="mast">
+  <div class="wrap">
+    <span class="eyebrow">RenovShield · customer journey</span>
+    <h1>Quote to Handover</h1>
+    <p class="lede">How a first-time HDB homeowner moves through RenovShield across roughly three months — and the three points where the product holds the money back.</p>
+    <p class="thesis">One mechanic, applied three times: payment waits until something has been checked.</p>
+    <dl class="facts">
+      <div><dt>Accounts</dt><dd>None — the link is the key</dd></div>
+      <div><dt>Span</dt><dd>Day 0 to week 12</dd></div>
+      <div><dt>Worked example</dt><dd>S$50,000 budget, 3 quotes</dd></div>
+    </dl>
+  </div>
+</header>
+
+<main>
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">The spine</span>
+      <h2>Contract value, released in five parts</h2>
+      <p>Every figure below is the app's own worked example: Firm A's quote of S$48,400 plus one S$240 change order agreed during works, giving a contract value of S$48,640.</p>
+    </div>
+
+    <div class="rail" aria-hidden="true">
+      <span class="s-rel"></span><span class="s-held"></span><span class="s-held"></span><span class="s-held"></span><span class="s-block"></span>
+    </div>
+    <div class="rail-key">
+      <span class="k-rel">Released</span>
+      <span class="k-held">Held until the stage checklist is complete</span>
+      <span class="k-block">Blocked while any defect is open</span>
+    </div>
+
+    <div class="schedwrap">
+      <table class="sched">
+        <caption>Payment schedule — the gate on each milestone is enforced by the app, not advisory text</caption>
+        <thead>
+          <tr><th scope="col">Milestone</th><th scope="col" class="pct">Share</th><th scope="col" class="amt">Amount</th><th scope="col">Releases when</th><th scope="col">State</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Deposit on signing</td><td class="pct">20%</td><td class="amt">S$9,728</td><td class="gate">Contract saved, deposit matches it</td><td><span class="chip c-rel">Paid</span></td></tr>
+          <tr><td>Hacking and masonry</td><td class="pct">20%</td><td class="amt">S$9,728</td><td class="gate">3 checks: layout, debris cleared, photos filed</td><td><span class="chip c-held">2 of 3</span></td></tr>
+          <tr><td>Electrical and plumbing</td><td class="pct">20%</td><td class="amt">S$9,728</td><td class="gate">3 checks, including a water test for leaks</td><td><span class="chip c-held">Not started</span></td></tr>
+          <tr><td>Carpentry installed</td><td class="pct">25%</td><td class="amt">S$12,160</td><td class="gate">3 checks: cabinets, wardrobes, finishes match samples</td><td><span class="chip c-held">Not started</span></td></tr>
+          <tr><td>Handover</td><td class="pct">15%</td><td class="amt">S$7,296</td><td class="gate">2 checks <em>and</em> every defect marked Checked</td><td><span class="chip c-block">Blocked</span></td></tr>
+        </tbody>
+        <tfoot>
+          <tr><td>Contract value</td><td class="pct">100%</td><td class="amt">S$48,640</td><td class="gate">Quote S$48,400 + S$240 in change orders</td><td></td></tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">The journey</span>
+      <h2>Three stages, three gates</h2>
+    </div>
+
+    <!-- STAGE 1 -->
+    <div class="stage">
+      <div class="stage-rail">
+        <span class="when">Stage 1 · Day 0</span>
+        <h3>Before signing</h3>
+        <span class="dur">About 40 minutes, in one sitting</span>
+        <div class="screens"><b>Enter quotes</b><b>Review</b></div>
+      </div>
+      <div>
+        <ol class="beats">
+          <li><span><b>Opens the app with no sign-up</b><p>Every call to action on the marketing page — including “Start Core Shield” and “Start Full-Arc Pro” — opens the same dialog offering <em>John's example</em> or <em>blank</em>. Picking one mints a private link and drops them straight in.</p><span class="said">“You'll get a private link to your project. Anyone with the link can view and edit it.”</span></span></li>
+          <li><span><b>States the budget</b><p>S$50,000 budget, S$10,000 deposit planned, 5% buffer for changes during works.</p></span></li>
+          <li><span><b>Answers seven questions per firm</b><p>HDB Directory of Renovation Contractors listing, CaseTrust accreditation, completion date in the contract, deposit asked, price escalation, cancellation fee.</p></span></li>
+          <li><span><b>Types 33 prices</b><p>Eleven line items across three firms. A blank cell is meaningful — it means that quote omits the item, and it is the single most important input on the screen.</p></span></li>
+          <li><span><b>Reads the review</b><p>A verdict, three firm cards, then price comparison, contractor checks, budget trade-offs and a copyable list of questions to ask. Fifteen concerns surfaced across the three quotes.</p></span></li>
+        </ol>
+
+        <div class="compare">
+          <div>
+            <span class="firm">Firm B</span>
+            <span class="head">Headline</span>
+            <span class="big">S$39,000</span>
+            <span class="note">Omits electrical works and final cleaning. Wants 50% up front, no completion date.</span>
+          </div>
+          <div>
+            <span class="firm">Firm B</span>
+            <span class="head">Like-for-like</span>
+            <span class="big">S$44,400</span>
+            <span class="note">Once the two missing items are priced at the middle of the typical range.</span>
+          </div>
+          <div>
+            <span class="firm">Firm A</span>
+            <span class="head">Recommended</span>
+            <span class="big">S$48,400</span>
+            <span class="note">Complete quote, 20% deposit, in the HDB directory, CaseTrust accredited.</span>
+          </div>
+        </div>
+
+        <div class="gatebox">
+          <span class="lbl">Gate 1 — nothing has been paid yet</span>
+          <h4>Compare the like-for-like total, not the headline price</h4>
+          <p>Firm B looks S$9,400 cheaper than Firm A. Once the omissions are priced in, the real gap is S$4,000 — and it comes with a 50% deposit and no completion date. The app's recommendation is Firm A at S$50,820 including the buffer, with a note to find S$820 to stay on budget.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAGE 2 -->
+    <div class="stage">
+      <div class="stage-rail">
+        <span class="when">Stage 2 · Weeks 1–10</span>
+        <h3>During works</h3>
+        <span class="dur">Returns every week or two</span>
+        <div class="screens"><b>Milestones</b><b>Records</b></div>
+      </div>
+      <div>
+        <ol class="beats">
+          <li><span><b>Nominates the firm they signed with</b><p>Contract value becomes that firm's quote plus any change orders logged in Records.</p></span></li>
+          <li><span><b>Walks the site, ticks the checklist</b><p>Each milestone carries its own checks — walls hacked to the agreed layout, debris removed, photos saved, no leaks after a water test.</p></span></li>
+          <li><span><b>Pays only once the checklist is clear</b><p>Paying writes a Payment record into the vault automatically and freezes the amount, so a later change order cannot rewrite what the record says was paid.</p></span></li>
+          <li><span><b>Files everything as it happens</b><p>Agreements, change orders, photo notes, payments and issues land on one searchable timeline. The S$240 for two extra power points in the study was agreed over WhatsApp on 20 November and logged the same day.</p></span></li>
+        </ol>
+
+        <div class="gatebox held">
+          <span class="lbl">Gate 2 — enforced on the button itself</span>
+          <h4>“Finish checks to pay”</h4>
+          <p>The payment button is disabled until every check on that milestone is ticked, and says so. Money cannot run ahead of the work. The two tabs form a loop: paying writes a record, and change orders recorded raise the contract value the next payment is calculated from.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAGE 3 -->
+    <div class="stage">
+      <div class="stage-rail">
+        <span class="when">Stage 3 · Weeks 10–12</span>
+        <h3>At handover</h3>
+        <span class="dur">Days, under pressure to sign off</span>
+        <div class="screens"><b>Defects</b><b>Milestones</b></div>
+      </div>
+      <div>
+        <ol class="beats">
+          <li><span><b>Walks the flat room by room</b><p>Logs each defect by room and severity — a kitchen cabinet door that won't close flush, water pooling near the bathroom floor trap.</p></span></li>
+          <li><span><b>Sends the list</b><p>One button copies every un-checked defect as numbered plain text, ready to paste to the contractor.</p></span></li>
+          <li><span><b>Moves each item along</b><p>Open, then Fixed when the contractor says so, then Checked once the homeowner has seen it themselves. Only Checked counts.</p></span></li>
+          <li><span><b>Releases the last 15%</b><p>When the final defect clears, the banner flips from “Hold the final payment” to “Ready for handover” and the last milestone unlocks.</p></span></li>
+        </ol>
+
+        <div class="gatebox block">
+          <span class="lbl">Gate 3 — the one with leverage</span>
+          <h4>S$7,296 stays put while any defect is open</h4>
+          <p>The Handover milestone cannot be marked paid while a single defect sits at Open or Fixed. In the worked example that is three defects, one of them major — so the banner reads “Hold the final payment”. This is the moment the whole product exists for: the homeowner still holds 15% when their leverage would otherwise be gone.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Honest read</span>
+      <h2>Where the journey breaks</h2>
+      <p>Ranked by how much damage each does to the journey above, not by how hard it is to fix.</p>
+    </div>
+    <ol class="friction">
+      <li>
+        <span class="rank">01</span>
+        <b>The link is the only key</b>
+        <span class="chip c-block">Critical</span>
+        <p>No account, no email, no recovery, no list of your projects. The URL is mentioned once in the opening dialog, then lives behind a small “Copy project link” button. A journey deliberately designed to span three months hangs entirely on the customer not losing a tab.</p>
+        <span class="where">Bites from day 0 onward</span>
+      </li>
+      <li>
+        <span class="rank">02</span>
+        <b>Thirty-three prices, typed by hand</b>
+        <span class="chip c-block">Critical</span>
+        <p>There is no PDF upload and no OCR anywhere in the product. The promise is “compare three quotations”, and the wall sits squarely between the customer and the first moment of value — they must do all the work before seeing any of the payoff.</p>
+        <span class="where">Bites at stage 1, step 4</span>
+      </li>
+      <li>
+        <span class="rank">03</span>
+        <b>The pricing tiers do not exist</b>
+        <span class="chip c-held">High</span>
+        <p>All five tabs are available to everyone. “Check a quote”, “Start Core Shield” and “Start Full-Arc Pro” are the same button wired to the same dialog. There is no payment step anywhere in the journey, so the journey you would demo and the one you would charge for are not yet the same.</p>
+        <span class="where">Bites across every stage</span>
+      </li>
+      <li>
+        <span class="rank">04</span>
+        <b>Typical prices are eleven fixed ranges</b>
+        <span class="chip c-held">Medium</span>
+        <p>Identical for every project and inherited even by a blank one. “Checked against typical prices” currently rests on static seed figures rather than market data or anything specific to the customer's flat type.</p>
+        <span class="where">Bites at stage 1, step 5</span>
+      </li>
+      <li>
+        <span class="rank">05</span>
+        <b>Fixed at exactly three firms</b>
+        <span class="chip c-held">Medium</span>
+        <p>The server accepts between one and six, but the interface offers no way to add or remove one. A homeowner holding two quotes, or four, has to work around the product.</p>
+        <span class="where">Bites at stage 1, step 3</span>
+      </li>
+    </ol>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p><strong>The gates are self-reported.</strong> Nothing verifies that the work was done — the homeowner ticks their own boxes, and the money moves in their own bank. RenovShield is a discipline tool that makes withholding payment the default rather than an argument the customer has to start. It is not escrow, and the pitch should not imply that it is.</p>
+    <p>Figures throughout are the app's own worked example for Minimum Lovable Persons (Group 6). Pilot numbers on the marketing page are stated targets, not results.</p>
+  </div>
+</footer>
+</body>
+</html>
