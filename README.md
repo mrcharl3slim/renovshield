@@ -47,11 +47,23 @@ If you connect with an external database URL, set `PGSSL=true`.
 
 ### Sending recovery email
 
-Set `GMAIL_USER` and `GMAIL_APP_PASSWORD` (a Google
-[App Password](https://myaccount.google.com/apppasswords), not your account
-password; the account needs 2-Step Verification turned on). Leave them unset and
-everything still works — the server prints recovery links to its log instead of
-emailing them, which is fine for local development.
+Two transports, picked in this order:
+
+1. **Brevo** (`BREVO_API_KEY` + `BREVO_SENDER`) — an HTTPS API, and the only one
+   that works in production. `BREVO_SENDER` must be an address you have verified
+   in Brevo; the free tier allows 300 emails a day and needs no domain.
+2. **Gmail SMTP** (`GMAIL_USER` + `GMAIL_APP_PASSWORD`, a Google
+   [App Password](https://myaccount.google.com/apppasswords) with 2-Step
+   Verification on) — for local development only.
+
+Set neither and everything still works: the server prints recovery links to its
+log instead of sending them. `GET /healthz` reports which transport is active
+(`brevo`, `smtp` or `none`) so a deployed instance can be diagnosed from outside.
+
+**Why not SMTP in production:** Render blocks outbound SMTP. Measured from the
+running service, `smtp.gmail.com:587` and `:465` both time out in ~260ms while
+`api.brevo.com:443` connects in ~23ms. Any host that blocks SMTP needs the
+HTTPS transport; the symptom otherwise is email that silently never arrives.
 
 ## API
 

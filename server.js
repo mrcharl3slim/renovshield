@@ -50,9 +50,15 @@ async function migrate() {
 // Gmail SMTP: works with an app password and no verified domain, which suits a
 // demo. Unconfigured, the link is logged instead so the flow still works locally.
 // Somebody is waiting on a page while this runs, so every stage is bounded.
-// Hosts commonly throttle or block outbound SMTP, and the failure mode without
-// these is a request that hangs for two minutes.
+// Without these the failure mode is a request that hangs for two minutes.
 const MAIL_TIMEOUT_MS = Number(process.env.MAIL_TIMEOUT_MS || 8000);
+
+// Two transports, because hosting providers commonly block outbound SMTP to
+// deter spam - Render does: smtp.gmail.com:587 and :465 both time out there,
+// while ordinary HTTPS egress is open. Brevo goes over 443 and is what works in
+// production; Gmail SMTP stays for local development, where the port is open.
+const BREVO_KEY = process.env.BREVO_API_KEY;
+const BREVO_SENDER = process.env.BREVO_SENDER;
 const mailer = (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD)
   ? nodemailer.createTransport({
       service: "gmail",
@@ -62,7 +68,30 @@ const mailer = (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD)
       socketTimeout: MAIL_TIMEOUT_MS,
     })
   : null;
-if (!mailer) console.warn("GMAIL_USER / GMAIL_APP_PASSWORD not set - recovery links will be logged, not emailed.");
+const mailMode = (BREVO_KEY && BREVO_SENDER) ? "brevo" : mailer ? "smtp" : "none";
+if (mailMode === "none") {
+  console.warn("No mail transport configured (BREVO_API_KEY + BREVO_SENDER, or GMAIL_USER + GMAIL_APP_PASSWORD) - recovery links will be logged, not emailed.");
+} else {
+  console.log(`Mail transport: ${mailMode}`);
+}
+
+// Brevo's transactional endpoint. The sender address must be verified in Brevo,
+// or it answers 400 and nothing goes out.
+async function sendViaBrevo(to, subject, body) {
+  const r = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: { "api-key": BREVO_KEY, "content-type": "application/json", accept: "application/json" },
+    body: JSON.stringify({
+      sender: { name: "RenovShield", email: BREVO_SENDER },
+      to: [{ email: to }],
+      subject,
+      textContent: body,
+    }),
+    signal: AbortSignal.timeout(MAIL_TIMEOUT_MS),
+  });
+  if (!r.ok) throw new Error(`Brevo ${r.status}: ${(await r.text()).slice(0, 300)}`);
+  return true;
+}
 
 function withTimeout(promise, ms, label) {
   promise.catch(() => {});   // a late rejection must not surface as unhandled
@@ -76,17 +105,18 @@ function withTimeout(promise, ms, label) {
 // Returns whether the message actually went out. Never throws, and never takes
 // longer than the budget above - the caller saves the address either way.
 async function sendMail(to, subject, body) {
-  if (!mailer) {
+  if (mailMode === "none") {
     console.log(`[email not configured] would send to ${to}\n--- ${subject} ---\n${body}\n---`);
     return false;
   }
   try {
-    await withTimeout(
-      mailer.sendMail({ from: `RenovShield <${process.env.GMAIL_USER}>`, to, subject, text: body }),
-      MAIL_TIMEOUT_MS + 2000, "SMTP send");
+    const send = mailMode === "brevo"
+      ? sendViaBrevo(to, subject, body)
+      : mailer.sendMail({ from: `RenovShield <${process.env.GMAIL_USER}>`, to, subject, text: body });
+    await withTimeout(send, MAIL_TIMEOUT_MS + 2000, `${mailMode} send`);
     return true;
   } catch (e) {
-    console.error(`Could not email ${to}:`, e.message);
+    console.error(`Could not email ${to} via ${mailMode}:`, e.message);
     return false;
   }
 }
@@ -231,7 +261,7 @@ app.get("/healthz", async (_req, res) => {
   // mail reports only whether credentials are present - never what they are.
   // Without it there is no way to tell an unconfigured mailer from a blocked
   // SMTP port, since both just mean "the email didn't go".
-  const mail = mailer ? "configured" : "not configured";
+  const mail = mailMode;
   try { await pool.query("SELECT 1"); res.json({ ok: true, mail }); }
   catch (e) { res.status(500).json({ ok: false, mail }); }
 });

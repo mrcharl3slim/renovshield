@@ -14,12 +14,14 @@ services:
         fromDatabase:
           name: renovshield-db
           property: connectionString
-      # Recovery email (Gmail SMTP). Set both in the Render dashboard; without
-      # them the app still runs and logs recovery links instead of sending them.
-      # GMAIL_APP_PASSWORD is a Google App Password, not your account password.
-      - key: GMAIL_USER
+      # Recovery email. Set both in the Render dashboard; without them the app
+      # still runs and logs recovery links instead of sending them.
+      # Brevo goes over HTTPS because Render blocks outbound SMTP - Gmail SMTP
+      # cannot work here (smtp.gmail.com:587 and :465 both time out).
+      # BREVO_SENDER must be an address verified in your Brevo account.
+      - key: BREVO_API_KEY
         sync: false
-      - key: GMAIL_APP_PASSWORD
+      - key: BREVO_SENDER
         sync: false
 
 databases:
