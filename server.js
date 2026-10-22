@@ -49,21 +49,46 @@ async function migrate() {
 /* ---------------- email ---------------- */
 // Gmail SMTP: works with an app password and no verified domain, which suits a
 // demo. Unconfigured, the link is logged instead so the flow still works locally.
+// Somebody is waiting on a page while this runs, so every stage is bounded.
+// Hosts commonly throttle or block outbound SMTP, and the failure mode without
+// these is a request that hangs for two minutes.
+const MAIL_TIMEOUT_MS = Number(process.env.MAIL_TIMEOUT_MS || 8000);
 const mailer = (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD)
   ? nodemailer.createTransport({
       service: "gmail",
       auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD },
+      connectionTimeout: MAIL_TIMEOUT_MS,
+      greetingTimeout: MAIL_TIMEOUT_MS,
+      socketTimeout: MAIL_TIMEOUT_MS,
     })
   : null;
 if (!mailer) console.warn("GMAIL_USER / GMAIL_APP_PASSWORD not set - recovery links will be logged, not emailed.");
 
+function withTimeout(promise, ms, label) {
+  promise.catch(() => {});   // a late rejection must not surface as unhandled
+  let timer;
+  const bell = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+  });
+  return Promise.race([promise, bell]).finally(() => clearTimeout(timer));
+}
+
+// Returns whether the message actually went out. Never throws, and never takes
+// longer than the budget above - the caller saves the address either way.
 async function sendMail(to, subject, body) {
   if (!mailer) {
     console.log(`[email not configured] would send to ${to}\n--- ${subject} ---\n${body}\n---`);
     return false;
   }
-  await mailer.sendMail({ from: `RenovShield <${process.env.GMAIL_USER}>`, to, subject, text: body });
-  return true;
+  try {
+    await withTimeout(
+      mailer.sendMail({ from: `RenovShield <${process.env.GMAIL_USER}>`, to, subject, text: body }),
+      MAIL_TIMEOUT_MS + 2000, "SMTP send");
+    return true;
+  } catch (e) {
+    console.error(`Could not email ${to}:`, e.message);
+    return false;
+  }
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -275,16 +300,10 @@ app.put("/api/projects/:id/email", h(async (req, res) => {
   let emailed = false;
   if (email) {
     const link = `${origin(req)}/p/${req.params.id}`;
-    try {
-      emailed = await sendMail(email, "Your RenovShield project link",
-        `Here is the link to your RenovShield project. Keep this email — the link is the only way back in.\n\n${link}\n\n` +
-        `Anyone with the link can view and edit the project, so share it only with people you trust.\n\n` +
-        `Lost it later? Go to ${origin(req)} and choose "Lost your link?".`);
-    } catch (e) {
-      // The address is saved either way; recovery by email still works.
-      console.error("Could not send project link:", e.message);
-      emailed = false;
-    }
+    emailed = await sendMail(email, "Your RenovShield project link",
+      `Here is the link to your RenovShield project. Keep this email — the link is the only way back in.\n\n${link}\n\n` +
+      `Anyone with the link can view and edit the project, so share it only with people you trust.\n\n` +
+      `Lost it later? Go to ${origin(req)} and choose "Lost your link?".`);
   }
   res.json({ recoveryEmail: maskEmail(email), emailed });
 }));
@@ -299,12 +318,10 @@ app.post("/api/recover", recoverIpLimit, recoverEmailLimit, h(async (req, res) =
   if (r.rowCount) {
     const token = crypto.randomBytes(32).toString("base64url");
     await pool.query("INSERT INTO recovery_tokens (token, email, expires_at) VALUES ($1, $2, now() + interval '30 minutes')", [token, email]);
-    try {
-      await sendMail(email, "Your RenovShield projects",
-        `Here is a link to the RenovShield projects saved under this address. It works for 30 minutes.\n\n` +
-        `${origin(req)}/recover/${token}\n\n` +
-        `If you didn't ask for this, you can ignore this email — nothing has changed.`);
-    } catch (e) { console.error("Could not send recovery email:", e.message); }
+    await sendMail(email, "Your RenovShield projects",
+      `Here is a link to the RenovShield projects saved under this address. It works for 30 minutes.\n\n` +
+      `${origin(req)}/recover/${token}\n\n` +
+      `If you didn't ask for this, you can ignore this email — nothing has changed.`);
   }
   res.json({ ok: true });
 }));
