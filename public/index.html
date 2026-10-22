@@ -142,6 +142,8 @@ blockquote footer { margin-top: 16px; font-size: .95rem; opacity: .8; }
 .price-card li::before { content: "✓"; color: var(--accent); font-weight: 800; margin-right: 10px; }
 .site-foot { border-top: 1px solid var(--line); padding-block: 28px; font-size: .92rem; color: var(--muted); }
 .site-foot .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+.site-foot a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.site-foot a:hover { color: var(--accent); }
 
 /* ---------- app ---------- */
 .appbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--surface); border-bottom: 1px solid var(--line); }
@@ -490,7 +492,7 @@ dialog .btn { justify-content: center; }
 
   <footer class="site-foot">
     <div class="wrap">
-      <span>© 2027 RenovShield · By Minimum Lovable Persons (Group 6)</span>
+      <span>© 2027 RenovShield · By Minimum Lovable Persons (Group 6) · <a href="/journey">Customer journey</a></span>
       <span>RenovShield gives independent guidance, not legal advice.</span>
     </div>
   </footer>
