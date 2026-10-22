@@ -288,6 +288,27 @@ app.put("/api/projects/:id", saveProject);
 // navigator.sendBeacon, which the page uses on unload, can only issue a POST.
 app.post("/api/projects/:id", saveProject);
 
+// TEMPORARY diagnostic: is outbound SMTP blocked, or is all egress blocked?
+// Hardcoded targets only - no user input reaches the socket. Removed once answered.
+app.get("/api/_egress", h(async (_req, res) => {
+  const net = require("net");
+  const probe = (host, port) => new Promise(resolve => {
+    const t0 = Date.now();
+    const sock = net.createConnection({ host, port });
+    const done = r => { sock.destroy(); resolve(`${r} in ${Date.now() - t0}ms`); };
+    sock.setTimeout(6000);
+    sock.on("connect", () => done("open"));
+    sock.on("timeout", () => done("TIMEOUT"));
+    sock.on("error", e => done("error: " + e.code));
+  });
+  res.json({
+    "smtp.gmail.com:587": await probe("smtp.gmail.com", 587),
+    "smtp.gmail.com:465": await probe("smtp.gmail.com", 465),
+    "api.brevo.com:443": await probe("api.brevo.com", 443),
+    "example.com:80": await probe("example.com", 80),
+  });
+}));
+
 /* ---------------- recovery ---------------- */
 
 // Attach or clear the address this project can be recovered to.
