@@ -1,0 +1,1331 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="RenovShield helps first-time HDB homeowners compare renovation quotes, pay milestones only after checking the work, keep records and track defects.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect width=%2224%22 height=%2224%22 rx=%225%22 fill=%22%231d5a4c%22/%3E%3Cpath d=%22M3 11 12 4l9 7M8 14.5l3 3 5-6%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222.4%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3C/svg%3E">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>RenovShield</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;600;700;800&family=Source+Sans+3:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: marketing site (hero with live report preview, then problem / how / checks / pilot / pricing) and a two-tab app (Enter quotes, Review report), switched by #app. */
+:root {
+  --bg: #f4f6f5;
+  --surface: #ffffff;
+  --sunk: #e8edeb;
+  --grid: rgba(29, 90, 76, .07);
+  --ink: #142019;
+  --muted: #55635d;
+  --line: #d3dcd8;
+  --accent: #1d5a4c;
+  --accent-hi: #24705f;
+  --accent-ink: #ffffff;
+  --accent-soft: #dcebe5;
+  --deep: #0f2a23;
+  --deep-ink: #e8f2ee;
+  --ok: #217a4b;   --ok-bg: #dcefe3;
+  --warn: #8f5500; --warn-bg: #fbe8c6;
+  --bad: #b3261e;  --bad-bg: #f9dcd9;
+  --f-display: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Source Sans 3", "Segoe UI", Arial, sans-serif;
+  --f-num: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f1513; --surface: #17201d; --sunk: #202b27; --grid: rgba(124, 199, 174, .06);
+  --ink: #e5eee9; --muted: #9bafa7; --line: #2f3e38;
+  --accent: #7cc7ae; --accent-hi: #96d8c1; --accent-ink: #0c1a15; --accent-soft: #213a31;
+  --deep: #0a1210; --deep-ink: #dcebe5;
+  --ok: #7fd3a1; --ok-bg: #1d3a2a; --warn: #f2c06b; --warn-bg: #3b2e15; --bad: #ff9c92; --bad-bg: #43211e;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0f1513; --surface: #17201d; --sunk: #202b27; --grid: rgba(124, 199, 174, .06);
+  --ink: #e5eee9; --muted: #9bafa7; --line: #2f3e38;
+  --accent: #7cc7ae; --accent-hi: #96d8c1; --accent-ink: #0c1a15; --accent-soft: #213a31;
+  --deep: #0a1210; --deep-ink: #dcebe5;
+  --ok: #7fd3a1; --ok-bg: #1d3a2a; --warn: #f2c06b; --warn-bg: #3b2e15; --bad: #ff9c92; --bad-bg: #43211e;
+  color-scheme: dark }
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { background: var(--bg); color: var(--ink); font: 400 1.0625rem/1.55 var(--f-body); }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; }
+h1, h2, h3, h4 { font-family: var(--f-display); text-wrap: balance; margin: 0; line-height: 1.12; letter-spacing: -0.015em; }
+p { margin: 0; }
+a { color: inherit; }
+.num { font-family: var(--f-num); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.eyebrow { font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; color: var(--accent); }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid transparent; border-radius: 8px; padding: 11px 20px; font-weight: 700; background: var(--accent); color: var(--accent-ink); text-decoration: none; white-space: nowrap; }
+.btn:hover { background: var(--accent-hi); }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn.ghost:hover { background: var(--sunk); }
+.btn.sm { padding: 6px 12px; font-size: .92rem; }
+.pill { display: inline-block; font-size: .78rem; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+.p-ok { background: var(--ok-bg); color: var(--ok); }
+.p-warn { background: var(--warn-bg); color: var(--warn); }
+.p-bad { background: var(--bad-bg); color: var(--bad); }
+.p-acc { background: var(--accent-soft); color: var(--accent); }
+
+/* ---------- site nav ---------- */
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.nav .wrap { display: flex; align-items: center; gap: 24px; padding-block: 12px; }
+.logo { display: flex; align-items: center; gap: 9px; text-decoration: none; }
+.logo .mk { width: 30px; height: 30px; border-radius: 7px; background: var(--accent); display: grid; place-items: center; flex: none; }
+.logo .mk svg { width: 18px; height: 18px; }
+.logo b { font-family: var(--f-display); font-weight: 800; font-size: 1.25rem; letter-spacing: -0.02em; }
+.nav-links { display: flex; gap: 20px; margin-left: auto; font-weight: 600; font-size: .98rem; }
+.nav-links a { text-decoration: none; color: var(--muted); }
+.nav-links a:hover { color: var(--ink); }
+@media (max-width: 760px) { .nav-links { display: none; } .nav .btn { margin-left: auto; } }
+
+/* ---------- hero ---------- */
+.hero { background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 28px 28px; border-bottom: 1px solid var(--line); }
+.hero .wrap { display: grid; grid-template-columns: 1.05fr .95fr; gap: 48px; align-items: center; padding-block: 64px 72px; }
+.hero h1 { font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 800; margin-top: 12px; }
+.hero .lede { font-size: 1.2rem; color: var(--muted); margin-top: 18px; max-width: 34em; }
+.hero .ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.hero .fine { margin-top: 16px; font-size: .92rem; color: var(--muted); }
+@media (max-width: 900px) { .hero .wrap { grid-template-columns: 1fr; padding-block: 40px 48px; gap: 36px; } }
+
+.preview { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 24px 48px -28px rgba(15, 42, 35, .45); overflow: hidden; min-width: 0; }
+.preview .bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--sunk); font-size: .9rem; }
+.preview .body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.pv-row { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
+.pv-row b { font-weight: 600; }
+.pv-row small { display: block; color: var(--muted); font-size: .85rem; }
+.pv-note { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 8px; background: var(--warn-bg); color: var(--warn); font-weight: 600; font-size: .95rem; }
+
+/* ---------- sections ---------- */
+section.band { padding-block: 72px; }
+section.band.alt { background: var(--surface); border-block: 1px solid var(--line); }
+.sec-head { max-width: 680px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 36px; }
+.sec-head h2 { font-size: clamp(1.7rem, 3.4vw, 2.4rem); font-weight: 800; }
+.sec-head p { color: var(--muted); font-size: 1.1rem; }
+.facts-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); overflow: hidden; }
+.facts-strip div { padding: 20px 22px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 4px; }
+.facts-strip div:last-child { border-right: 0; }
+.facts-strip .num { font-size: 1.6rem; font-weight: 500; }
+@media (max-width: 760px) { .facts-strip { grid-template-columns: 1fr; } .facts-strip div { border-right: 0; border-bottom: 1px solid var(--line); } .facts-strip div:last-child { border-bottom: 0; } }
+
+.cols3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+@media (max-width: 860px) { .cols3 { grid-template-columns: 1fr; } }
+.point h3 { font-size: 1.2rem; margin-bottom: 8px; }
+.point p { color: var(--muted); }
+.steps3 { counter-reset: s; }
+.steps3 .point::before { counter-increment: s; content: counter(s); display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font: 700 1rem var(--f-display); margin-bottom: 14px; }
+.checks-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.checks-grid div { background: var(--surface); padding: 22px; }
+.checks-grid h4 { font-size: 1.05rem; margin-bottom: 6px; }
+.checks-grid p { color: var(--muted); font-size: .98rem; }
+@media (max-width: 860px) { .checks-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .checks-grid { grid-template-columns: 1fr; } }
+
+.proof { display: grid; grid-template-columns: .9fr 1.1fr; gap: 40px; align-items: center; }
+@media (max-width: 860px) { .proof { grid-template-columns: 1fr; } }
+.stats { display: flex; flex-wrap: wrap; gap: 36px; }
+.stats div { display: flex; flex-direction: column; gap: 2px; }
+.stats .num { font-size: 2.4rem; font-weight: 500; color: var(--accent); line-height: 1.1; }
+blockquote { margin: 0; padding: 28px; border-radius: 14px; background: var(--deep); color: var(--deep-ink); }
+blockquote p { font-family: var(--f-display); font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
+blockquote footer { margin-top: 16px; font-size: .95rem; opacity: .8; }
+
+.pricing { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+@media (max-width: 860px) { .pricing { grid-template-columns: 1fr; } }
+.price-card { background: var(--surface); border: 2px solid var(--accent); border-radius: 14px; padding: 28px; }
+.price-card .num { font-size: 3rem; font-weight: 500; }
+.price-card ul { list-style: none; padding: 0; margin: 18px 0 24px; display: flex; flex-direction: column; gap: 8px; }
+.price-card li::before { content: "✓"; color: var(--accent); font-weight: 800; margin-right: 10px; }
+.site-foot { border-top: 1px solid var(--line); padding-block: 28px; font-size: .92rem; color: var(--muted); }
+.site-foot .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+
+/* ---------- app ---------- */
+.appbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--surface); border-bottom: 1px solid var(--line); }
+.appbar .wrap { display: flex; align-items: center; gap: 16px; padding-block: 10px; flex-wrap: wrap; }
+.tabs { display: flex; gap: 4px; background: var(--sunk); padding: 4px; border-radius: 9px; }
+.tabs button { border: 0; background: transparent; padding: 7px 14px; border-radius: 6px; font-weight: 600; color: var(--muted); }
+.tabs button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.appbar .right { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.app-main { padding-block: 28px 64px; display: flex; flex-direction: column; gap: 22px; }
+.app-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 12px; }
+.app-head h1 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; min-width: 0; }
+.card > h3 { font-size: 1.1rem; margin-bottom: 4px; }
+.card > .sub { color: var(--muted); font-size: .95rem; margin-bottom: 14px; }
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.g3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 860px) { .g2, .g3 { grid-template-columns: 1fr; } }
+
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label, .lbl { font-size: .85rem; font-weight: 600; color: var(--muted); }
+input[type="text"], input[type="number"], select { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--bg); min-width: 0; }
+input[type="number"] { font-family: var(--f-num); font-variant-numeric: tabular-nums; }
+input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: var(--accent); }
+.fields { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+@media (max-width: 760px) { .fields { grid-template-columns: 1fr 1fr; } }
+.firm-ed { display: flex; flex-direction: column; gap: 10px; }
+.tog { display: flex; align-items: center; gap: 9px; font-size: .97rem; cursor: pointer; }
+.tog input { width: 18px; height: 18px; accent-color: var(--accent); flex: none; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.tablewrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 8px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+thead th { font-size: .76rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; }
+.ed-table { min-width: 520px; }
+.ed-table.detail { min-width: 860px; }
+.ed-table td { padding: 5px 4px; }
+.ed-table input[type="number"] { text-align: right; width: 104px; }
+.ed-table .w-name { min-width: 220px; }
+.ed-table select { width: 118px; }
+.ed-table input.missing { border-style: dashed; background: var(--bad-bg); }
+.icon-btn { border: 0; background: transparent; color: var(--muted); padding: 6px 8px; border-radius: 6px; font-size: 1.1rem; line-height: 1; }
+.icon-btn:hover { background: var(--sunk); color: var(--bad); }
+.ed-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; align-items: center; margin-top: 12px; font-size: .92rem; }
+
+.verdict { display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center; background: var(--deep); color: var(--deep-ink); border-radius: 12px; padding: 22px; }
+.verdict .badge { width: 52px; height: 52px; border-radius: 12px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font: 800 1.4rem var(--f-display); }
+.verdict h2 { font-size: 1.35rem; font-weight: 700; }
+.verdict p { opacity: .85; margin-top: 4px; }
+.verdict .count { text-align: right; }
+.verdict .count .num { font-size: 2rem; display: block; line-height: 1; }
+@media (max-width: 640px) { .verdict { grid-template-columns: 1fr; } .verdict .count { text-align: left; } }
+
+.firmcard { display: flex; flex-direction: column; gap: 8px; }
+.firmcard.rec { border: 2px solid var(--accent); }
+.fc-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.big { font-family: var(--f-num); font-size: 1.55rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+.kv { display: grid; grid-template-columns: 1fr auto; gap: 3px 10px; font-size: .95rem; }
+.kv span:nth-child(even) { text-align: right; font-family: var(--f-num); font-variant-numeric: tabular-nums; }
+.meter { position: relative; height: 12px; background: var(--sunk); border-radius: 3px; margin-top: 4px; }
+.meter i { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 3px; background: var(--accent); }
+.meter i.est { background: repeating-linear-gradient(45deg, var(--warn) 0 4px, transparent 4px 8px); }
+.meter i.over { background: var(--bad); }
+.meter b { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--ink); }
+.cmp td.miss { background: var(--bad-bg); color: var(--bad); font-weight: 700; }
+.cmp td.hi { background: var(--warn-bg); color: var(--warn); font-weight: 700; }
+.cmp td.lo { color: var(--muted); font-style: italic; }
+.cmp tfoot td { font-weight: 700; border-bottom: 0; }
+.cmp { min-width: 680px; }
+.legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: .88rem; color: var(--muted); margin-top: 12px; }
+.legend span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.legend .lm::before { background: var(--bad-bg); border: 1px solid var(--bad); }
+.legend .lh::before { background: var(--warn-bg); border: 1px solid var(--warn); }
+.legend .le::before { background: repeating-linear-gradient(45deg, var(--warn) 0 3px, transparent 3px 6px); }
+
+.checks { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+.checks li { display: grid; grid-template-columns: 24px 1fr; gap: 8px; align-items: start; font-size: .97rem; }
+.ic { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: .78rem; font-weight: 800; }
+.ic.ok { background: var(--ok-bg); color: var(--ok); }
+.ic.warn { background: var(--warn-bg); color: var(--warn); }
+.ic.bad { background: var(--bad-bg); color: var(--bad); }
+.checks small { display: block; color: var(--muted); font-size: .88rem; }
+
+.opts { display: flex; flex-direction: column; gap: 8px; }
+.opt { position: relative; display: block; }
+.opt input { position: absolute; opacity: 0; inset: 0; }
+.opt-box { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+.opt-box .tick { width: 20px; height: 20px; border: 2px solid var(--line); border-radius: 4px; display: grid; place-items: center; color: var(--accent-ink); font-size: .75rem; font-weight: 800; }
+.opt input:checked + .opt-box { border-color: var(--accent); background: var(--accent-soft); }
+.opt input:checked + .opt-box .tick { background: var(--accent); border-color: var(--accent); }
+.opt input:checked + .opt-box .tick::after { content: "✓"; }
+.opt input:focus-visible + .opt-box { outline: 3px solid var(--accent); outline-offset: 2px; }
+.opt-box small { display: block; color: var(--muted); font-size: .86rem; }
+.tally { display: grid; grid-template-columns: 1fr auto; gap: 5px 14px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.tally span:nth-child(even) { text-align: right; font-family: var(--f-num); font-variant-numeric: tabular-nums; }
+.tally .grand { font-weight: 700; font-size: 1.08rem; }
+ol.qs { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 8px; }
+.row-between { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.empty { color: var(--muted); font-style: italic; }
+.note { font-size: .88rem; color: var(--muted); }
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--deep); color: var(--deep-ink); padding: 10px 16px; border-radius: 8px; font-weight: 600; z-index: 50; }
+
+/* ---------- decluttered app ---------- */
+.narrow { max-width: 760px; margin: 0 auto; padding-inline: 20px; }
+.small { font-size: .9rem; }
+.pane-h { font-size: 1.45rem; font-weight: 800; margin-bottom: 4px; }
+.stack { display: flex; flex-direction: column; gap: 14px; }
+.linkbtn { border: 0; background: none; padding: 4px 2px; color: var(--accent); font-weight: 600; }
+.linkbtn:hover { text-decoration: underline; }
+.wiz { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.wiz button { width: 100%; display: flex; align-items: center; gap: 8px; border: 0; border-top: 3px solid var(--line); background: none; padding: 10px 0 0; color: var(--muted); font-weight: 600; text-align: left; }
+.wiz button span { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: .8rem; background: var(--sunk); flex: none; }
+.wiz button.on { border-top-color: var(--accent); color: var(--ink); }
+.wiz button.on span, .wiz button.done span { background: var(--accent); color: var(--accent-ink); }
+.wiz button.done { border-top-color: var(--accent); }
+.wiz-nav { display: flex; justify-content: space-between; gap: 12px; }
+details.more { border-top: 1px solid var(--line); padding-top: 12px; }
+details.more summary { cursor: pointer; font-weight: 600; color: var(--accent); margin-bottom: 4px; }
+details.more[open] summary { margin-bottom: 12px; }
+.seg { display: flex; flex-wrap: wrap; gap: 4px; background: var(--sunk); padding: 4px; border-radius: 9px; width: fit-content; max-width: 100%; margin-bottom: 18px; }
+.seg button { border: 0; background: transparent; padding: 7px 16px; border-radius: 6px; font-weight: 600; color: var(--muted); }
+.seg button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.rtabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); overflow-x: auto; margin-bottom: -10px; }
+.rtabs button { border: 0; background: none; padding: 10px 14px; font-weight: 600; color: var(--muted); border-bottom: 3px solid transparent; white-space: nowrap; }
+.rtabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.firmcard .meter { margin-block: 4px; }
+
+/* ---------- pricing tiers ---------- */
+.tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: stretch; }
+@media (max-width: 860px) { .tiers { grid-template-columns: 1fr; } }
+.tier { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 24px; display: flex; flex-direction: column; gap: 6px; }
+.tier.feat { border: 2px solid var(--accent); }
+.tier h3 { font-size: 1.15rem; }
+.tier .num { font-size: 2.4rem; font-weight: 500; }
+.tier ul { list-style: none; padding: 0; margin: 12px 0 20px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.tier li::before { content: "✓"; color: var(--accent); font-weight: 800; margin-right: 10px; }
+.tier .btn { justify-content: center; }
+
+/* ---------- during-works tools ---------- */
+.tabs { overflow-x: auto; max-width: 100%; }
+.tabs button { white-space: nowrap; }
+.tabgrp { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; align-self: center; padding: 0 4px 0 8px; white-space: nowrap; }
+.sumgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.sumgrid div { background: var(--surface); padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; }
+.sumgrid .num { font-size: 1.3rem; }
+@media (max-width: 760px) { .sumgrid { grid-template-columns: 1fr 1fr; } }
+.ms { display: flex; flex-direction: column; gap: 10px; }
+.ms-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.ms-top h3 { font-size: 1.05rem; }
+.ms .checks li.ck { display: block; }
+.ms-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 10px; }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+.btn[disabled]:hover { background: var(--accent); }
+.rec-list, .def-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.rec-item, .def-item { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.rec-item .meta, .def-item .meta { font-size: .86rem; color: var(--muted); }
+.rec-item p, .def-item p { grid-column: 1 / -1; font-size: .96rem; }
+.row-actions { display: flex; gap: 6px; align-items: center; }
+.formgrid { display: grid; grid-template-columns: 140px 160px 1fr; gap: 10px; }
+.formgrid .wide { grid-column: 1 / -1; }
+@media (max-width: 640px) { .formgrid { grid-template-columns: 1fr 1fr; } }
+input[type="date"], textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--bg); font: inherit; color: inherit; min-width: 0; }
+textarea { resize: vertical; min-height: 60px; }
+.filters { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.filters input { flex: 1; min-width: 160px; }
+.filters select { width: auto; }
+dialog { border: 1px solid var(--line); border-radius: 14px; padding: 24px; max-width: 420px; width: calc(100% - 32px); background: var(--surface); color: var(--ink); }
+dialog::backdrop { background: rgba(10, 18, 16, .5); }
+dialog .btn { justify-content: center; }
+.right .btn.sm { padding: 5px 10px; }
+</style>
+
+</head><body>
+<!-- =================== SITE =================== -->
+<div id="site">
+  <header class="nav">
+    <div class="wrap">
+      <a class="logo" href="#top" aria-label="RenovShield home">
+        <span class="mk" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M8 14.5l3 3 5-6"/></svg></span>
+        <b>RenovShield</b>
+      </a>
+      <nav class="nav-links" aria-label="Sections">
+        <a href="#how">How it works</a><a href="#checks">Before signing</a><a href="#during">During works</a><a href="#pilot">Pilot goals</a><a href="#pricing">Pricing</a>
+      </nav>
+      <a class="btn sm" href="#start" data-start>Open the app</a>
+    </div>
+  </header>
+
+  <section class="hero" id="top">
+    <div class="wrap">
+      <div>
+        <span class="eyebrow">For first-time HDB homeowners</span>
+        <h1>Protect your renovation from first quote to final handover.</h1>
+        <p class="lede">Compare quotations before you sign. Then pay each milestone only after the work is done, keep every agreement in one place, and get defects fixed before the final payment.</p>
+        <div class="ctas">
+          <a class="btn" href="#start" data-start>Check my quotes free</a>
+          <a class="btn ghost" href="#how">How it works</a>
+        </div>
+        <p class="fine">First quote check free · Core Shield S$99 · Full-Arc Pro S$199 · Independent of contractors</p>
+      </div>
+      <div class="preview" aria-label="Example RenovShield report">
+        <div class="bar"><b>Example review</b><span class="pill p-ok">Ready</span></div>
+        <div class="body">
+          <div class="pv-row"><span><b>Firm A</b><small>Complete quote · low risk</small></span><span class="num">S$48,400</span><span class="pill p-acc">Best fit</span></div>
+          <div class="pv-row"><span><b>Firm B</b><small>Quoted S$39,000 but leaves out electrical works</small></span><span class="num">S$44,400</span><span class="pill p-bad">High risk</span></div>
+          <div class="pv-row"><span><b>Firm C</b><small>Two items above typical price</small></span><span class="num">S$56,700</span><span class="pill p-warn">Over budget</span></div>
+          <div class="pv-note"><span aria-hidden="true">!</span><span>Firm B asks for a 50% deposit and has no completion date in the contract.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="problem">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">The problem</span>
+        <h2>The risk doesn't end when you sign</h2>
+        <p>First-time homeowners commit tens of thousands of dollars to decisions they can't judge, then have to manage the works around a full-time job.</p>
+      </div>
+      <div class="cols3">
+        <div class="point"><h3>Quotes are hard to compare</h3><p>Different formats, unfamiliar terms and missing items make it hard to tell if two firms offer the same work.</p></div>
+        <div class="point"><h3>Payments run ahead of the work</h3><p>Milestone payments are often asked for before you can check that the work is finished properly.</p></div>
+        <div class="point"><h3>Agreements get lost</h3><p>Changes agreed on WhatsApp are hard to find later, which leaves you weak in a dispute or at handover.</p></div>
+      </div>
+      <div class="facts-strip" style="margin-top:40px">
+        <div><span class="num">3 stages</span><span class="muted">before signing, during works, at handover</span></div>
+        <div><span class="num">S$0</span><span class="muted">to check your first quotation</span></div>
+        <div><span class="num">S$199</span><span class="muted">for protection through to handover</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band alt" id="how">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">How it works</span>
+        <h2>One place for the whole renovation</h2>
+      </div>
+      <div class="cols3 steps3">
+        <div class="point"><h3>Before signing</h3><p>Compare up to three quotations, check each contractor and contract, and get questions to ask.</p></div>
+        <div class="point"><h3>During works</h3><p>Check the work at each milestone before you pay, and keep every agreement and change in one record.</p></div>
+        <div class="point"><h3>At handover</h3><p>Log defects room by room, and hold the final payment until each one is fixed and checked.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="checks">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Before signing</span>
+        <h2>Everything you'd want a friend in the industry to look at</h2>
+      </div>
+      <div class="checks-grid">
+        <div><h4>Like-for-like prices</h4><p>Each line item set against the other quotes and a typical price range.</p></div>
+        <div><h4>Missing items</h4><p>Work one quote leaves out, with an estimate of what it will really cost.</p></div>
+        <div><h4>Contractor checks</h4><p>Listing in HDB's Directory of Renovation Contractors and CaseTrust accreditation.</p></div>
+        <div><h4>Payment terms</h4><p>Deposit size, payment schedule and whether payments follow finished work.</p></div>
+        <div><h4>Contract clauses</h4><p>Completion dates, price increases and cancellation fees.</p></div>
+        <div><h4>Budget trade-offs</h4><p>Where to save without giving up what matters, with a buffer for changes.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band alt" id="during">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">During works and handover</span>
+        <h2>Stay in control without being on site every day</h2>
+        <p>Included in Full-Arc Pro.</p>
+      </div>
+      <div class="cols3">
+        <div class="point"><h3>Payment milestones</h3><p>Each payment comes with a short checklist. Tick off the work before you pay, so your money never runs ahead of the job.</p></div>
+        <div class="point"><h3>Records vault</h3><p>Save agreements, change orders, photos and payments in one timeline. Find what was agreed in seconds.</p></div>
+        <div class="point"><h3>Defect list</h3><p>Log defects by room, send the list to your contractor, and release the final payment only when every item is checked.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="pilot">
+    <div class="wrap proof">
+      <div>
+        <div class="sec-head" style="margin-bottom:24px">
+          <span class="eyebrow">Illustrative results</span>
+          <h2>What a 50-review pilot aims to show</h2>
+          <p>Example targets for our first pilot. These are not real results yet.</p>
+        </div>
+        <div class="stats">
+          <div><span class="num">38/50</span><span class="muted">target: reviews that find a material concern</span></div>
+          <div><span class="num">84%</span><span class="muted">target: homeowners who feel more confident</span></div>
+        </div>
+      </div>
+      <blockquote>
+        <p>"RenovShield showed me which items were unusually priced and flagged terms to clarify before signing. For the first time, I understood what I was signing and why."</p>
+        <footer>John Tan, first-time HDB homeowner (illustrative persona)</footer>
+      </blockquote>
+    </div>
+  </section>
+
+  <section class="band alt" id="pricing">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Pricing</span>
+        <h2>Start free. Add protection when you need it.</h2>
+        <p>One payment per project. No contractor ties. For a S$40,000–50,000 renovation, full protection costs about half a percent.</p>
+      </div>
+      <div class="tiers">
+        <div class="tier">
+          <h3>Free</h3>
+          <div><span class="num">S$0</span></div>
+          <span class="muted">Try it on one quotation</span>
+          <ul>
+            <li>1 quotation checked against typical prices</li>
+            <li>Missing items flagged</li>
+          </ul>
+          <a class="btn ghost" href="#start" data-start>Check a quote</a>
+        </div>
+        <div class="tier">
+          <h3>Core Shield</h3>
+          <div><span class="num">S$99</span> <span class="muted">per project</span></div>
+          <span class="muted">Everything before you sign</span>
+          <ul>
+            <li>Up to 3 quotations compared</li>
+            <li>Contractor and contract checks</li>
+            <li>Budget savings that keep your priorities</li>
+            <li>Questions to ask before signing</li>
+          </ul>
+          <a class="btn ghost" href="#start" data-start>Start Core Shield</a>
+        </div>
+        <div class="tier feat">
+          <h3>Full-Arc Pro <span class="pill p-acc">Most protection</span></h3>
+          <div><span class="num">S$199</span> <span class="muted">per project</span></div>
+          <span class="muted">From first quote to handover</span>
+          <ul>
+            <li>Everything in Core Shield</li>
+            <li>Payment milestone checklists</li>
+            <li>Records vault for agreements and changes</li>
+            <li>Defect list before the final payment</li>
+          </ul>
+          <a class="btn" href="#start" data-start>Start Full-Arc Pro</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <span>© 2027 RenovShield · By Minimum Lovable Persons (Group 6)</span>
+      <span>RenovShield gives independent guidance, not legal advice.</span>
+    </div>
+  </footer>
+</div>
+
+<!-- =================== APP =================== -->
+<div id="app" hidden>
+  <header class="appbar">
+    <div class="wrap">
+      <a class="logo" href="/" aria-label="Back to RenovShield home">
+        <span class="mk" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M8 14.5l3 3 5-6"/></svg></span>
+        <b>RenovShield</b>
+      </a>
+      <div class="tabs" role="tablist" aria-label="App sections">
+        <span class="tabgrp" aria-hidden="true">Before signing</span>
+        <button type="button" role="tab" id="tab-enter" data-tab="enter" aria-controls="pane-enter" aria-selected="true" tabindex="0" aria-label="Enter quotes, before signing">Enter quotes</button>
+        <button type="button" role="tab" id="tab-report" data-tab="report" aria-controls="pane-report" aria-selected="false" tabindex="-1" aria-label="Review, before signing">Review</button>
+        <span class="tabgrp" aria-hidden="true">During works</span>
+        <button type="button" role="tab" id="tab-ms" data-tab="ms" aria-controls="pane-ms" aria-selected="false" tabindex="-1" aria-label="Milestones, during works">Milestones</button>
+        <button type="button" role="tab" id="tab-rec" data-tab="rec" aria-controls="pane-rec" aria-selected="false" tabindex="-1" aria-label="Records, during works">Records</button>
+        <button type="button" role="tab" id="tab-def" data-tab="def" aria-controls="pane-def" aria-selected="false" tabindex="-1" aria-label="Defects, during works">Defects</button>
+      </div>
+      <div class="right"><span class="small muted" id="save-status" aria-live="polite"></span><button type="button" class="btn ghost sm" id="copy-link">Copy project link</button><button type="button" class="linkbtn" id="reset">Reset to example</button></div>
+    </div>
+  </header>
+
+  <main>
+  <!-- ENTER: three short steps -->
+  <section class="narrow app-main" id="pane-enter" role="tabpanel" aria-labelledby="tab-enter">
+    <ol class="wiz" id="wiz">
+      <li><button type="button" data-wiz="0"><span>1</span>Your project</button></li>
+      <li><button type="button" data-wiz="1"><span>2</span>Firms</button></li>
+      <li><button type="button" data-wiz="2"><span>3</span>Prices</button></li>
+    </ol>
+
+    <section class="card wiz-pane" data-pane="0">
+      <h2 class="pane-h">Tell us about your renovation</h2>
+      <p class="sub">We check every quote against these.</p>
+      <div class="stack">
+        <div class="field"><label for="f-owner">Your name</label><input type="text" id="f-owner" data-k="owner"></div>
+        <div class="two">
+          <div class="field"><label for="f-budget">Budget (S$)</label><input type="number" id="f-budget" min="0" step="500" data-k="budget"></div>
+          <div class="field"><label for="f-deposit">Deposit you planned (S$)</label><input type="number" id="f-deposit" min="0" step="500" data-k="deposit"></div>
+        </div>
+        <details class="more">
+          <summary>More options</summary>
+          <div class="field" style="max-width:240px"><label for="f-buffer">Buffer for changes during works (%)</label><input type="number" id="f-buffer" min="0" max="30" step="1" data-k="buffer"></div>
+        </details>
+      </div>
+    </section>
+
+    <section class="card wiz-pane" data-pane="1" hidden>
+      <h2 class="pane-h">About each firm</h2>
+      <p class="sub">Answer from each quotation and contract.</p>
+      <div class="seg" id="firm-seg" role="tablist" aria-label="Firm"></div>
+      <div id="firm-editor" class="stack" role="tabpanel" aria-labelledby="seg0"></div>
+    </section>
+
+    <section class="card wiz-pane" data-pane="2" hidden>
+      <h2 class="pane-h">Enter the prices</h2>
+      <p class="sub">Leave a price blank if that quote doesn't include the item.</p>
+      <label class="tog" style="margin-bottom:12px"><input type="checkbox" id="show-detail">Show typical prices and what matters to me</label>
+      <div class="tablewrap"><table class="ed-table" id="item-editor"></table></div>
+      <button type="button" class="btn ghost sm" id="add-item" style="margin-top:12px">+ Add item</button>
+    </section>
+
+    <div class="wiz-nav">
+      <button type="button" class="btn ghost" id="wiz-back">Back</button>
+      <button type="button" class="btn" id="wiz-next">Next</button>
+    </div>
+  </section>
+
+  <!-- REPORT: summary first, details in tabs -->
+  <section class="wrap app-main" id="pane-report" role="tabpanel" aria-labelledby="tab-report" hidden>
+    <div class="app-head">
+      <h1 id="r-title">Your review</h1>
+      <button type="button" class="btn ghost sm" id="edit-back">← Edit quotes</button>
+    </div>
+    <div class="verdict" id="r-verdict"></div>
+    <div class="g3" id="r-firms"></div>
+
+    <div class="rtabs" role="tablist" aria-label="Review details">
+      <button type="button" role="tab" id="rt-prices" data-rt="prices" aria-controls="rp-prices" aria-selected="true" tabindex="0">Prices</button>
+      <button type="button" role="tab" id="rt-checks" data-rt="checks" aria-controls="rp-checks" aria-selected="false" tabindex="-1">Contractor checks</button>
+      <button type="button" role="tab" id="rt-budget" data-rt="budget" aria-controls="rp-budget" aria-selected="false" tabindex="-1">Fit your budget</button>
+      <button type="button" role="tab" id="rt-questions" data-rt="questions" aria-controls="rp-questions" aria-selected="false" tabindex="-1">Questions to ask</button>
+    </div>
+
+    <section class="card rt-pane" id="rp-prices" data-rp="prices" role="tabpanel" aria-labelledby="rt-prices">
+      <div class="tablewrap"><table class="cmp" id="r-table"></table></div>
+      <div class="legend"><span class="lm">Missing from quote</span><span class="lh">Above typical price</span></div>
+    </section>
+    <section class="card rt-pane" id="rp-checks" data-rp="checks" role="tabpanel" aria-labelledby="rt-checks" hidden>
+      <div class="g3" id="r-risks"></div>
+    </section>
+    <section class="card rt-pane" id="rp-budget" data-rp="budget" role="tabpanel" aria-labelledby="rt-budget" hidden>
+      <div class="row-between"><p class="muted">Savings that keep your priorities.</p>
+        <select id="r-firmsel" aria-label="Firm" style="width:auto"></select></div>
+      <div class="g2">
+        <div class="opts" id="r-opts"></div>
+        <div>
+          <div class="tally" id="r-tally"></div>
+          <div class="meter" style="margin-top:14px" aria-hidden="true"><i id="r-tbar"></i><b id="r-tline"></b></div>
+          <p class="note" style="margin-top:6px">Black line marks your budget.</p>
+        </div>
+      </div>
+    </section>
+    <section class="card rt-pane" id="rp-questions" data-rp="questions" role="tabpanel" aria-labelledby="rt-questions" hidden>
+      <div class="row-between"><h3 id="r-qhead">Ask before signing</h3><button type="button" class="btn ghost sm" id="copy">Copy</button></div>
+      <ol class="qs" id="r-qs"></ol>
+    </section>
+    <p class="note">Deposits above 20% are flagged. Missing items are estimated at the middle of the typical price. RenovShield gives independent guidance, not legal advice.</p>
+  </section>
+
+  <!-- MILESTONES -->
+  <section class="wrap app-main" id="pane-ms" role="tabpanel" aria-labelledby="tab-ms" hidden>
+    <div class="app-head">
+      <div><h1>Payment milestones</h1><p class="muted">Tick off the work before each payment.</p></div>
+      <div class="field" style="min-width:200px"><label for="ms-firm">Signed with</label><select id="ms-firm"></select></div>
+    </div>
+    <div class="sumgrid" id="ms-sum"></div>
+    <div class="stack" id="ms-list"></div>
+    <p class="note">Contract value is the signed firm's quote plus change orders in your records. A milestone you've paid keeps the amount it was paid at, so later changes don't rewrite your history. The final payment stays locked while defects are open.</p>
+  </section>
+
+  <!-- RECORDS -->
+  <section class="wrap app-main" id="pane-rec" role="tabpanel" aria-labelledby="tab-rec" hidden>
+    <div class="app-head">
+      <div><h1>Records vault</h1><p class="muted">Every agreement, change and payment in one timeline.</p></div>
+    </div>
+    <section class="card">
+      <h3>Add a record</h3>
+      <p class="sub">Save it the same day, while you still have the WhatsApp message or photo.</p>
+      <div class="formgrid">
+        <div class="field"><label for="rc-date">Date</label><input type="date" id="rc-date"></div>
+        <div class="field"><label for="rc-type">Type</label><select id="rc-type">
+          <option>Agreement</option><option>Change order</option><option>Photo note</option><option>Payment</option><option>Issue</option></select></div>
+        <div class="field"><label for="rc-title">Title</label><input type="text" id="rc-title" placeholder="e.g. Add 2 power points in study"></div>
+        <div class="field wide"><label for="rc-note">Details</label><textarea id="rc-note" placeholder="Who agreed, where (e.g. WhatsApp), and what exactly"></textarea></div>
+        <div class="field"><label for="rc-amt">Cost change (S$)</label><input type="number" id="rc-amt" step="10" placeholder="0"></div>
+      </div>
+      <button type="button" class="btn sm" id="rc-add" style="margin-top:12px">Save record</button>
+    </section>
+    <section class="card">
+      <div class="row-between"><h3 id="rc-head">Timeline</h3><span class="pill p-warn" id="rc-chg"></span></div>
+      <div class="filters">
+        <input type="text" id="rc-q" placeholder="Search records" aria-label="Search records">
+        <select id="rc-f" aria-label="Filter by type"><option value="">All types</option><option>Agreement</option><option>Change order</option><option>Photo note</option><option>Payment</option><option>Issue</option></select>
+      </div>
+      <ul class="rec-list" id="rc-list"></ul>
+    </section>
+  </section>
+
+  <!-- DEFECTS -->
+  <section class="wrap app-main" id="pane-def" role="tabpanel" aria-labelledby="tab-def" hidden>
+    <div class="app-head">
+      <div><h1>Defect list</h1><p class="muted">Log defects before the final payment.</p></div>
+      <button type="button" class="btn ghost sm" id="df-copy">Copy list for contractor</button>
+    </div>
+    <div class="verdict" id="df-verdict"></div>
+    <section class="card">
+      <h3>Add a defect</h3>
+      <div class="formgrid" style="margin-top:10px">
+        <div class="field"><label for="df-room">Room</label><select id="df-room">
+          <option>Living</option><option>Kitchen</option><option>Master bedroom</option><option>Bedroom 2</option><option>Bedroom 3</option><option>Bathroom</option><option>Other</option></select></div>
+        <div class="field"><label for="df-sev">Severity</label><select id="df-sev"><option>Minor</option><option>Major</option></select></div>
+        <div class="field"><label for="df-desc">What's wrong</label><input type="text" id="df-desc" placeholder="e.g. Cabinet door doesn't close flush"></div>
+      </div>
+      <button type="button" class="btn sm" id="df-add" style="margin-top:12px">Add defect</button>
+    </section>
+    <section class="card">
+      <h3>All defects</h3>
+      <p class="sub">Move each item from Open to Fixed when the contractor says it's done, then to Checked once you've seen it.</p>
+      <ul class="def-list" id="df-list"></ul>
+    </section>
+  </section>
+  </main>
+</div>
+
+<dialog id="start-dlg" aria-labelledby="start-h">
+  <form method="dialog" class="stack">
+    <h2 id="start-h" class="pane-h">Start a project</h2>
+    <p class="muted">You'll get a private link to your project. Anyone with the link can view and edit it, so share it only with people you trust.</p>
+    <div class="stack">
+      <button type="button" class="btn" data-new="example">Start with John's example</button>
+      <button type="button" class="btn ghost" data-new="blank">Start blank</button>
+    </div>
+    <button value="cancel" class="linkbtn" style="align-self:flex-start">Cancel</button>
+  </form>
+</dialog>
+
+<div id="loading" class="narrow app-main" hidden><p class="muted">Loading your project…</p></div>
+<div id="notfound" class="narrow app-main" hidden>
+  <h1 class="pane-h" id="nf-head">Project not found</h1>
+  <p class="muted" id="nf-body">Check the link, or start a new project.</p>
+  <p><button type="button" class="btn" id="nf-retry" hidden>Try again</button>
+     <a class="btn" href="#start" data-start id="nf-new">Start a project</a>
+     <a class="btn ghost" href="/">Home</a></p>
+</div>
+
+<dialog id="conflict-dlg" aria-labelledby="conflict-h">
+  <div class="stack">
+    <h2 id="conflict-h" class="pane-h">This project changed somewhere else</h2>
+    <p class="muted">Someone else with the link — or you, in another tab — saved after you opened this
+      page. Keeping both sets of edits isn't possible, so pick the one to keep.</p>
+    <button type="button" class="btn" data-conflict="theirs">Load their version</button>
+    <button type="button" class="btn ghost" data-conflict="mine">Keep mine and overwrite theirs</button>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ---------------- data ---------------- */
+const SAMPLE = {
+  owner: "John Tan", budget: 50000, deposit: 10000, buffer: 5,
+  signed: 0,
+  milestones: [
+    { name: "Deposit on signing",           pct: 20, checks: ["Contract and quotation saved in Records", "Deposit matches the contract"], done: [true, true], paid: true },
+    { name: "Hacking and masonry done",     pct: 20, checks: ["Walls hacked as per agreed layout", "Debris removed from the flat", "Photos saved in Records"], done: [true, true, false], paid: false },
+    { name: "Electrical and plumbing done", pct: 20, checks: ["Power points where agreed", "No leaks after water test", "Agreed changes included"], done: [false, false, false], paid: false },
+    { name: "Carpentry installed",          pct: 25, checks: ["Kitchen cabinets installed", "Wardrobes installed", "Finishes match the samples"], done: [false, false, false], paid: false },
+    { name: "Handover",                     pct: 15, checks: ["Final cleaning done", "Warranties and manuals received"], done: [false, false], paid: false, final: true }
+  ],
+  records: [
+    { date: "2026-11-02", type: "Agreement",    title: "Signed contract with Firm A", note: "Quotation and contract saved. Deposit 20%, completion date in contract.", amt: 0 },
+    { date: "2026-11-02", type: "Payment",      title: "Paid: Deposit on signing", note: "Paid by bank transfer.", amt: 0 },
+    { date: "2026-11-20", type: "Change order", title: "Add 2 power points in study", note: "Agreed with the designer on WhatsApp, 20 Nov.", amt: 240 },
+    { date: "2026-12-03", type: "Photo note",   title: "Hacking complete", note: "Photos of kitchen and bathroom walls after hacking.", amt: 0 },
+    { date: "2026-12-15", type: "Issue",        title: "Kitchen tiles differ from sample", note: "Designer agreed to replace at no cost (WhatsApp, 15 Dec).", amt: 0 }
+  ],
+  defects: [
+    { room: "Kitchen",  desc: "Cabinet door doesn't close flush", sev: "Minor", status: "Open" },
+    { room: "Bathroom", desc: "Water pools near the floor trap",  sev: "Major", status: "Open" },
+    { room: "Living",   desc: "Paint patch on ceiling",            sev: "Minor", status: "Fixed" }
+  ],
+  firms: [
+    { name: "Firm A", drc: true,  casetrust: true,  depositPct: 20, completion: true,  escalation: false, cancelFee: 0 },
+    { name: "Firm B", drc: false, casetrust: false, depositPct: 50, completion: false, escalation: true,  cancelFee: 0 },
+    { name: "Firm C", drc: true,  casetrust: true,  depositPct: 35, completion: true,  escalation: false, cancelFee: 3000 }
+  ],
+  items: [
+    { name: "Hacking and masonry",        lo: 2500, hi: 3500,  cat: "essential", vals: [3200, 2800, 3400] },
+    { name: "Vinyl flooring, 85 sqm",     lo: 5100, hi: 6800,  cat: "priority",  vals: [5950, 5600, 8900] },
+    { name: "Kitchen cabinets",           lo: 8000, hi: 10500, cat: "essential", vals: [9800, 8900, 10400] },
+    { name: "Kitchen island",             lo: 2800, hi: 4000,  cat: "priority",  vals: [3500, 3200, 4200] },
+    { name: "Wardrobes, 3 bedrooms",      lo: 9000, hi: 12000, cat: "priority",  vals: [10500, 9600, 12600] },
+    { name: "Electrical works",           lo: 4000, hi: 5500,  cat: "essential", vals: [4800, null, 5200] },
+    { name: "Plumbing",                   lo: 1800, hi: 2500,  cat: "essential", vals: [2200, 1900, 2400] },
+    { name: "Painting",                   lo: 2000, hi: 2800,  cat: "essential", vals: [2400, 2200, 2600] },
+    { name: "Ceiling and lighting",       lo: 3000, hi: 4000,  cat: "essential", vals: [3600, 3300, 4100] },
+    { name: "Feature wall, living room",  lo: 1200, hi: 2200,  cat: "optional",  vals: [1800, 1500, 2200] },
+    { name: "Final cleaning and haulage", lo: 500,  hi: 800,   cat: "essential", vals: [650, null, 700] }
+  ]
+};
+const clone = o => JSON.parse(JSON.stringify(o));
+// A blank project keeps the item list and typical prices but no quoted prices or history.
+function blankProject() {
+  const b = clone(SAMPLE);
+  b.owner = ""; b.deposit = 0; b.signed = 0;
+  b.firms = ["Firm A", "Firm B", "Firm C"].map(name => ({ name, drc: false, casetrust: false, depositPct: 20, completion: false, escalation: false, cancelFee: 0 }));
+  b.items.forEach(it => { it.vals = [null, null, null]; });
+  b.milestones.forEach(m => { m.done = m.done.map(() => false); m.paid = false; });
+  b.records = []; b.defects = [];
+  return b;
+}
+let S = clone(SAMPLE), projectId = null;
+
+/* ---------------- saving to the server ---------------- */
+// rev is the revision we last saw. The server rejects a save built on a stale
+// one, which is what stops two people on the same link overwriting each other.
+let saveTimer = null, saving = false, dirty = false, rev = null, conflict = null;
+function setStatus(t) { const el = document.getElementById("save-status"); if (el) el.textContent = t; }
+function save() {
+  if (!projectId || conflict) return;
+  dirty = true; setStatus("Saving…");
+  clearTimeout(saveTimer); saveTimer = setTimeout(flush, 600);
+}
+async function flush() {
+  if (!projectId || saving || !dirty || conflict) return;
+  saving = true; dirty = false;
+  try {
+    const r = await fetch(`/api/projects/${projectId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ data: S, rev }) });
+    if (r.status === 409) { showConflict(await r.json()); return; }
+    if (!r.ok) throw new Error(r.status);
+    rev = (await r.json()).rev;
+    setStatus(dirty ? "Saving…" : "All changes saved");
+  } catch (_) { dirty = true; setStatus("Not saved. Retrying…"); clearTimeout(saveTimer); saveTimer = setTimeout(flush, 4000); }
+  finally { saving = false; if (dirty && !conflict) { clearTimeout(saveTimer); saveTimer = setTimeout(flush, 600); } }
+}
+
+// Someone else saved after we loaded. We can't merge two versions of a quote
+// honestly, so say so plainly and let them choose which one survives.
+function showConflict(remote) {
+  conflict = remote;
+  setStatus("Changed somewhere else");
+  const d = $("conflict-dlg");
+  if (d && d.showModal) { if (!d.open) d.showModal(); }
+  else resolveConflict(window.confirm("This project changed somewhere else.\n\nOK loads their version; Cancel keeps yours.") ? "theirs" : "mine");
+}
+function resolveConflict(choice) {
+  const remote = conflict; conflict = null;
+  const d = $("conflict-dlg"); if (d && d.open) d.close();
+  if (choice === "theirs") {
+    S = remote.data; rev = remote.rev; dirty = false;
+    normalise(); activeFirm = 0; chosen.clear(); planFirm = null;
+    renderAll(); setStatus("All changes saved"); toast("Loaded the other version");
+  } else {
+    rev = remote.rev; dirty = true; setStatus("Saving…"); flush();
+    toast("Your version will overwrite theirs");
+  }
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-conflict]");
+  if (b) resolveConflict(b.dataset.conflict);
+});
+
+window.addEventListener("beforeunload", e => {
+  if (!projectId || conflict || (!dirty && !saving)) return;
+  // A fetch started here is routinely cancelled as the page goes away; a beacon
+  // is handed to the browser to deliver afterwards. It can only POST, which is
+  // why the server accepts a save on POST as well as PUT.
+  let queued = false;
+  try {
+    queued = navigator.sendBeacon(`/api/projects/${projectId}`,
+      new Blob([JSON.stringify({ data: S, rev })], { type: "application/json" }));
+  } catch (_) { queued = false; }
+  if (queued) return;
+  flush(); e.preventDefault(); e.returnValue = "";
+});
+
+const fmt = n => "S$" + Math.round(n).toLocaleString("en-SG");
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const mid = it => (Number(it.lo) + Number(it.hi)) / 2;
+const has = v => v !== null && v !== "" && !isNaN(v);
+const $ = id => document.getElementById(id);
+
+let wizStep = 0, activeFirm = 0, showDetail = false, reportTab = "prices";
+
+/* ---------------- routing ---------------- */
+function view(which) {
+  ["site", "app", "loading", "notfound"].forEach(id => { $(id).hidden = id !== which; });
+}
+// Fill in anything an older or hand-made project is missing, so no total comes out NaN.
+function normalise() {
+  ["signed", "milestones", "records", "defects"].forEach(k => { if (S[k] === undefined) S[k] = k === "signed" ? 0 : []; });
+  if (typeof S.owner !== "string") S.owner = "";
+  ["budget", "deposit", "buffer"].forEach(k => { if (typeof S[k] !== "number") S[k] = 0; });
+  S.items.forEach(it => { const v = Array.isArray(it.vals) ? it.vals : []; it.vals = S.firms.map((_, i) => has(v[i]) ? Number(v[i]) : null); });
+}
+function renderAll() { renderProject(); renderFirms(); renderItems(); showTab(currentTab); }
+
+// A missing project and an unreachable server are different problems, and only
+// one of them means the link is wrong.
+function loadFailed(head, body, retry) {
+  $("nf-head").textContent = head;
+  $("nf-body").textContent = body;
+  $("nf-retry").hidden = !retry;
+  $("nf-new").hidden = retry;
+  view("notfound");
+  document.title = head + " · RenovShield";
+}
+async function route() {
+  const m = location.pathname.match(/^\/p\/([A-Za-z0-9_-]{16,40})\/?$/);
+  if (!m) { view("site"); document.title = "RenovShield"; return; }
+  view("loading");
+  let r;
+  try { r = await fetch(`/api/projects/${m[1]}`); }
+  catch (_) { return loadFailed("Can't reach RenovShield", "Check your connection, then try again. Your project is still there.", true); }
+  if (r.status === 404) return loadFailed("Project not found", "Check the link, or start a new project.", false);
+  if (!r.ok) return loadFailed("Something went wrong", `The server answered with ${r.status}. Your project should be safe — try again in a moment.`, true);
+  let j;
+  try { j = await r.json(); }
+  catch (_) { return loadFailed("Something went wrong", "The server sent a reply we couldn't read.", true); }
+  S = j.data; projectId = m[1]; rev = Number.isInteger(j.rev) ? j.rev : null;
+  normalise();
+  document.title = (S.owner ? S.owner.split(" ")[0] + "'s project" : "My project") + " · RenovShield";
+  view("app"); setStatus("All changes saved");
+  renderProject(); renderFirms(); renderItems(); showWiz(0); showTab("enter");
+}
+$("nf-retry").addEventListener("click", () => route());
+
+/* ---------------- starting a project ---------------- */
+document.addEventListener("click", e => {
+  const a = e.target.closest("[data-start]");
+  if (!a) return;
+  e.preventDefault();
+  const d = $("start-dlg");
+  if (d.showModal) d.showModal(); else createProject("example");
+});
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-new]");
+  if (b) createProject(b.dataset.new);
+});
+async function createProject(kind) {
+  document.querySelectorAll("[data-new]").forEach(b => b.disabled = true);
+  try {
+    const data = kind === "blank" ? blankProject() : clone(SAMPLE);
+    const r = await fetch("/api/projects", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ data }) });
+    if (!r.ok) throw new Error(r.status === 429 ? "Too many new projects. Try again later." : "Could not create the project.");
+    const { id } = await r.json();
+    location.href = `/p/${id}`;
+  } catch (err) {
+    toast(err.message || "Could not create the project.");
+    document.querySelectorAll("[data-new]").forEach(b => b.disabled = false);
+  }
+}
+
+/* ---------------- entry wizard ---------------- */
+function showWiz(i) {
+  const from = wizStep;
+  wizStep = Math.max(0, Math.min(2, i));
+  document.querySelectorAll(".wiz-pane").forEach(p => p.hidden = +p.dataset.pane !== wizStep);
+  document.querySelectorAll("#wiz button").forEach((b, j) => {
+    b.classList.toggle("on", j === wizStep); b.classList.toggle("done", j < wizStep);
+    if (j === wizStep) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current");
+  });
+  // Step 3's column headers and labels carry the firm names edited in step 2.
+  // Only on arrival: re-rendering under someone already typing would drop focus.
+  if (wizStep === 2 && from !== 2) renderItems();
+  $("wiz-back").style.visibility = wizStep === 0 ? "hidden" : "visible";
+  $("wiz-next").textContent = wizStep === 2 ? "See my review →" : "Next";
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll("#wiz button").forEach(b => b.addEventListener("click", () => showWiz(+b.dataset.wiz)));
+$("wiz-back").addEventListener("click", () => showWiz(wizStep - 1));
+$("wiz-next").addEventListener("click", () => wizStep === 2 ? showTab("report") : showWiz(wizStep + 1));
+
+function renderProject() { ["owner", "budget", "deposit", "buffer"].forEach(k => { $("f-" + k).value = S[k]; }); }
+
+function renderFirms() {
+  $("firm-seg").innerHTML = S.firms.map((f, i) => `<button type="button" role="tab" id="seg${i}" data-seg="${i}" aria-controls="firm-editor" aria-selected="${i === activeFirm}" tabindex="${i === activeFirm ? 0 : -1}">${esc(f.name)}</button>`).join("");
+  $("firm-editor").setAttribute("aria-labelledby", "seg" + activeFirm);
+  const f = S.firms[activeFirm], i = activeFirm;
+  $("firm-editor").innerHTML = `
+    <div class="field"><label for="fn">Firm name</label><input type="text" id="fn" data-fk="name" value="${esc(f.name)}"></div>
+    <label class="tog"><input type="checkbox" id="fd" data-fk="drc" ${f.drc ? "checked" : ""}>Listed in HDB's contractor directory</label>
+    <label class="tog"><input type="checkbox" id="fc" data-fk="casetrust" ${f.casetrust ? "checked" : ""}>CaseTrust accredited</label>
+    <label class="tog"><input type="checkbox" id="ft" data-fk="completion" ${f.completion ? "checked" : ""}>Contract has a completion date</label>
+    <div class="field" style="max-width:200px"><label for="fp">Deposit asked (%)</label><input type="number" id="fp" min="0" max="100" data-fk="depositPct" value="${esc(f.depositPct)}"></div>
+    <details class="more" ${f.escalation || f.cancelFee ? "open" : ""}>
+      <summary>More contract details</summary>
+      <div class="stack">
+        <label class="tog"><input type="checkbox" id="fe" data-fk="escalation" ${f.escalation ? "checked" : ""}>Prices can rise with material costs</label>
+        <div class="field" style="max-width:200px"><label for="fx">Cancellation fee (S$)</label><input type="number" id="fx" min="0" step="100" data-fk="cancelFee" value="${esc(f.cancelFee)}"></div>
+      </div>
+    </details>
+    <div class="row-between" style="margin:6px 0 0">
+      ${i > 0 ? `<button type="button" class="linkbtn" data-seg="${i - 1}">← ${esc(S.firms[i - 1].name)}</button>` : "<span></span>"}
+      ${i < S.firms.length - 1 ? `<button type="button" class="linkbtn" data-seg="${i + 1}">${esc(S.firms[i + 1].name)} →</button>` : ""}
+    </div>`;
+}
+
+function renderItems() {
+  const d = showDetail;
+  $("item-editor").className = "ed-table" + (d ? " detail" : "");
+  let h = `<thead><tr><th>Item</th>${d ? "<th>Typical low</th><th>Typical high</th><th>Matters to me</th>" : ""}${S.firms.map((f, i) => `<th>${esc(f.name)}</th>`).join("")}<th><span style="position:absolute;left:-9999px">Remove</span></th></tr></thead><tbody>`;
+  S.items.forEach((it, r) => {
+    h += `<tr><td><input class="w-name" type="text" id="in${r}" data-r="${r}" data-ik="name" value="${esc(it.name)}" aria-label="Item name"></td>`;
+    if (d) h += `<td><input type="number" id="il${r}" data-r="${r}" data-ik="lo" value="${esc(it.lo)}" aria-label="Typical low"></td>
+      <td><input type="number" id="ih${r}" data-r="${r}" data-ik="hi" value="${esc(it.hi)}" aria-label="Typical high"></td>
+      <td><select id="ic${r}" data-r="${r}" data-ik="cat" aria-label="How much it matters">
+        <option value="essential" ${it.cat === "essential" ? "selected" : ""}>Essential</option>
+        <option value="priority" ${it.cat === "priority" ? "selected" : ""}>Priority</option>
+        <option value="optional" ${it.cat === "optional" ? "selected" : ""}>Nice to have</option></select></td>`;
+    h += it.vals.map((v, f) => `<td><input type="number" id="iv${r}_${f}" class="${has(v) ? "" : "missing"}" placeholder="—" data-r="${r}" data-vf="${f}" value="${has(v) ? esc(v) : ""}" aria-label="${esc(S.firms[f].name)} price for ${esc(it.name)}"></td>`).join("");
+    h += `<td><button type="button" class="icon-btn" data-del="${r}" aria-label="Remove ${esc(it.name)}">×</button></td></tr>`;
+  });
+  h += `</tbody><tfoot><tr><td>Total</td>${d ? "<td></td><td></td><td></td>" : ""}${S.firms.map((f, i) => `<td class="num" id="et${i}"></td>`).join("")}<td></td></tr></tfoot>`;
+  $("item-editor").innerHTML = h;
+  updateTotals();
+}
+function updateTotals() { S.firms.forEach((f, i) => { const c = $("et" + i); if (c) c.textContent = fmt(calc(i).quoted); }); }
+$("show-detail").addEventListener("change", e => { showDetail = e.target.checked; renderItems(); });
+
+document.addEventListener("input", e => {
+  const t = e.target;
+  if (t.dataset.k) S[t.dataset.k] = t.type === "number" ? Number(t.value) : t.value;
+  else if (t.dataset.fk) {
+    const f = S.firms[activeFirm];
+    f[t.dataset.fk] = t.type === "checkbox" ? t.checked : t.type === "number" ? Number(t.value) : t.value;
+    if (t.dataset.fk === "name") { const s = $("seg" + activeFirm); if (s) s.textContent = t.value; }
+  }
+  else if (t.dataset.ik) { const it = S.items[+t.dataset.r]; it[t.dataset.ik] = t.type === "number" ? Number(t.value) : t.value; }
+  else if (t.dataset.vf !== undefined) {
+    const v = t.value.trim() === "" ? null : Number(t.value);
+    S.items[+t.dataset.r].vals[+t.dataset.vf] = v;
+    t.classList.toggle("missing", v === null);
+  } else return;
+  save(); updateTotals();
+});
+document.addEventListener("change", e => { if (e.target.dataset.fk || e.target.dataset.ik) save(); });
+document.addEventListener("click", e => {
+  const s = e.target.closest("[data-seg]");
+  if (s) { activeFirm = +s.dataset.seg; renderFirms(); return; }
+  const d = e.target.closest("[data-del]");
+  if (d) { S.items.splice(+d.dataset.del, 1); save(); renderItems(); }
+});
+$("add-item").addEventListener("click", () => {
+  S.items.push({ name: "New item", lo: 0, hi: 0, cat: "essential", vals: S.firms.map(() => null) });
+  save(); renderItems();
+  const el = $("in" + (S.items.length - 1)); if (el) { el.focus(); el.select(); }
+});
+$("copy-link").addEventListener("click", () => {
+  const url = location.origin + location.pathname;
+  try { navigator.clipboard.writeText(url).then(() => toast("Project link copied"), () => toast(url)); } catch (_) { toast(url); }
+});
+$("reset").addEventListener("click", () => {
+  if (!confirm("Replace this project with the example?\n\nYour quotes, records, defects and payment progress will be lost. This can't be undone.")) return;
+  S = clone(SAMPLE); save(); chosen.clear(); planFirm = null; activeFirm = 0;
+  renderAll();
+  toast("Example loaded");
+});
+
+/* ---------------- analysis ---------------- */
+function calc(f) {
+  let quoted = 0, est = 0; const missing = [], above = [];
+  S.items.forEach(it => {
+    const v = it.vals[f];
+    if (!has(v)) { if (it.hi > 0) { missing.push(it); est += mid(it); } return; }
+    quoted += Number(v);
+    if (it.hi > 0 && v > it.hi) above.push(it);
+  });
+  const lfl = quoted + est, withBuf = lfl * (1 + S.buffer / 100);
+  return { quoted, est, lfl, withBuf, missing, above, fits: withBuf <= S.budget };
+}
+function checks(f) {
+  const F = S.firms[f], c = calc(f), out = [];
+  out.push(F.drc ? ["ok", "Listed in HDB's contractor directory", ""]
+                 : ["bad", "Not in HDB's contractor directory", "Ask who will carry out the works."]);
+  out.push(F.casetrust ? ["ok", "CaseTrust accredited", ""] : ["warn", "Not CaseTrust accredited", "Fewer protections in a dispute."]);
+  const amt = c.quoted * F.depositPct / 100;
+  const over = amt > S.deposit ? `More than the ${fmt(S.deposit)} you planned.` : "";
+  const dt = `Deposit ${F.depositPct}% (${fmt(amt)})`;
+  if (F.depositPct <= 20) out.push(["ok", dt, over]);
+  else if (F.depositPct <= 35) out.push(["warn", dt, ("Higher than usual. " + over).trim()]);
+  else out.push(["bad", dt, ("Large sum at risk before work starts. " + over).trim()]);
+  out.push(F.completion ? ["ok", "Completion date in contract", ""] : ["bad", "No completion date", "A delay could push back your move-in."]);
+  if (F.escalation) out.push(["warn", "Prices can rise", "No cap on increases."]);
+  if (F.cancelFee > 0) out.push(["warn", `${fmt(F.cancelFee)} kept if you cancel`, ""]);
+  return out;
+}
+function riskLevel(f) {
+  const cs = checks(f);
+  if (cs.some(c => c[0] === "bad")) return ["p-bad", "High risk", 3];
+  if (cs.some(c => c[0] === "warn")) return ["p-warn", "Some risk", 2];
+  return ["p-ok", "Low risk", 1];
+}
+function recommend() {
+  const safe = S.firms.map((_, i) => i).filter(i => calc(i).quoted > 0 && riskLevel(i)[2] < 3);
+  if (!safe.length) return null;
+  safe.sort((a, b) => (calc(b).fits - calc(a).fits) || (riskLevel(a)[2] - riskLevel(b)[2]) || (calc(a).lfl - calc(b).lfl));
+  return safe[0];
+}
+function concernCount() {
+  return S.firms.reduce((n, _, f) => { const c = calc(f); return n + c.missing.length + c.above.length + checks(f).filter(x => x[0] !== "ok").length + (c.fits ? 0 : 1); }, 0);
+}
+
+/* ---------------- report ---------------- */
+const chosen = new Set(); let planFirm = null;
+const sym = { ok: "✓", warn: "!", bad: "✕" }, label = { ok: "OK", warn: "Check", bad: "Problem" };
+
+function renderReport() {
+  const rec = recommend();
+  if (planFirm === null || planFirm >= S.firms.length) planFirm = rec === null ? 0 : rec;
+  $("r-title").textContent = S.owner ? `${S.owner.split(" ")[0]}'s review` : "Your review";
+
+  let head, body;
+  if (rec === null) { head = "Sort out the problems before choosing a firm"; body = "Every firm has at least one serious contractor or contract problem."; }
+  else {
+    const c = calc(rec), name = esc(S.firms[rec].name);
+    head = c.fits ? `${name} is your best fit` : `${name} is your best option`;
+    body = c.fits ? `${fmt(c.withBuf)} with a ${S.buffer}% buffer, ${fmt(S.budget - c.withBuf)} under budget.`
+                  : `${fmt(c.withBuf)} with a ${S.buffer}% buffer. Save ${fmt(c.withBuf - S.budget)} to stay on budget.`;
+  }
+  $("r-verdict").innerHTML = `<div class="badge" aria-hidden="true">${rec === null ? "!" : "✓"}</div>
+    <div><h2>${head}</h2><p>${body}</p></div>
+    <div class="count"><span class="num">${concernCount()}</span>concerns found</div>`;
+
+  const scale = Math.max(S.budget * 1.25, ...S.firms.map((_, f) => calc(f).withBuf)) || 1;
+  $("r-firms").innerHTML = S.firms.map((F, f) => {
+    const c = calc(f), r = riskLevel(f), isRec = f === rec;
+    return `<div class="card firmcard ${isRec ? "rec" : ""}">
+      <div class="fc-top"><h3>${esc(F.name)}</h3>${isRec ? '<span class="pill p-acc">Recommended</span>' : ""}</div>
+      <span class="big">${fmt(c.lfl)}</span>
+      <span class="small muted">${c.est ? `Quoted ${fmt(c.quoted)} + ${fmt(c.est)} missing` : "Complete quote"}</span>
+      <div class="meter" aria-hidden="true"><i class="${c.withBuf > S.budget ? "over" : ""}" style="width:${c.lfl / scale * 100}%"></i><b style="left:${S.budget / scale * 100}%"></b></div>
+      <div class="pills"><span class="pill ${c.fits ? "p-ok" : "p-bad"}">${c.fits ? "Within budget" : fmt(c.withBuf - S.budget) + " over"}</span><span class="pill ${r[0]}">${r[1]}</span></div>
+    </div>`;
+  }).join("");
+
+  let t = `<thead><tr><th>Item</th><th>Typical</th>${S.firms.map(F => `<th>${esc(F.name)}</th>`).join("")}</tr></thead><tbody>`;
+  S.items.forEach(it => {
+    t += `<tr><td>${esc(it.name)}${it.cat === "priority" ? ' <span class="pill p-acc">Priority</span>' : ""}</td>
+      <td class="num muted">${it.hi > 0 ? fmt(it.lo) + "–" + Math.round(it.hi / 100) / 10 + "k" : "—"}</td>`;
+    it.vals.forEach(v => {
+      if (!has(v)) t += `<td class="miss">Missing</td>`;
+      else if (it.hi > 0 && v > it.hi) t += `<td class="num hi">${fmt(v)} ▲</td>`;
+      else t += `<td class="num">${fmt(v)}</td>`;
+    });
+    t += `</tr>`;
+  });
+  t += `</tbody><tfoot><tr><td>Like-for-like total</td><td></td>${S.firms.map((_, f) => `<td class="num">${fmt(calc(f).lfl)}</td>`).join("")}</tr></tfoot>`;
+  $("r-table").innerHTML = t;
+
+  $("r-risks").innerHTML = S.firms.map((F, f) => {
+    const r = riskLevel(f);
+    return `<div><div class="fc-top"><h3 style="font-size:1.05rem">${esc(F.name)}</h3><span class="pill ${r[0]}">${r[1]}</span></div>
+      <ul class="checks">${checks(f).map(([s, a, b]) => `<li><span class="ic ${s}" role="img" aria-label="${label[s]}">${sym[s]}</span><span>${esc(a)}${b ? `<small>${esc(b)}</small>` : ""}</span></li>`).join("")}</ul></div>`;
+  }).join("");
+
+  $("r-firmsel").innerHTML = S.firms.map((F, f) => `<option value="${f}" ${f === planFirm ? "selected" : ""}>${esc(F.name)}${f === rec ? " (recommended)" : ""}</option>`).join("");
+  renderPlan();
+  showRTab(reportTab);
+}
+
+function savingsFor(f) {
+  const out = [];
+  S.items.forEach((it, r) => {
+    const v = it.vals[f]; if (!has(v) || v <= 0) return;
+    if (it.cat === "optional") out.push({ id: `d${r}`, text: `Drop the ${it.name.toLowerCase()}`, sub: "Nice to have", v: Number(v) });
+    else if (it.hi > 0 && v - mid(it) >= 100) out.push({ id: `n${r}`, text: `Negotiate ${it.name.toLowerCase()}`, sub: `Down to the typical ${fmt(mid(it))}`, v: Number(v) - mid(it) });
+  });
+  return out.sort((a, b) => b.v - a.v);
+}
+function renderPlan() {
+  const f = planFirm, c = calc(f), opts = savingsFor(f);
+  [...chosen].forEach(id => { if (!opts.some(o => o.id === id)) chosen.delete(id); });
+  $("r-opts").innerHTML = opts.length ? opts.map(o => `<label class="opt"><input type="checkbox" id="opt-${o.id}" data-opt="${o.id}" ${chosen.has(o.id) ? "checked" : ""}>
+      <span class="opt-box"><span class="tick"></span><span>${esc(o.text)}<small>${esc(o.sub)}</small></span><span class="num">−${fmt(o.v)}</span></span></label>`).join("")
+    : `<p class="empty">No savings found for this firm.</p>`;
+  const saving = opts.filter(o => chosen.has(o.id)).reduce((a, o) => a + o.v, 0);
+  const base = c.lfl - saving, buf = base * S.buffer / 100, total = base + buf, over = total > S.budget;
+  $("r-tally").innerHTML = `<span>${esc(S.firms[f].name)}</span><span>${fmt(c.lfl)}</span>
+    <span>Savings</span><span>${saving ? "−" + fmt(saving) : fmt(0)}</span>
+    <span>${S.buffer}% buffer</span><span>+${fmt(buf)}</span>
+    <span class="grand">Expected total</span><span class="grand">${fmt(total)}</span>
+    <span class="grand" style="color:var(${over ? "--bad" : "--ok"})">${over ? "Over budget" : "Under budget"}</span>
+    <span class="grand" style="color:var(${over ? "--bad" : "--ok"})">${fmt(Math.abs(S.budget - total))}</span>`;
+  const scale = Math.max(S.budget * 1.25, total) || 1;
+  $("r-tbar").style.width = (total / scale * 100) + "%";
+  $("r-tbar").className = over ? "over" : "";
+  $("r-tline").style.left = (S.budget / scale * 100) + "%";
+
+  const F = S.firms[f], q = [];
+  c.missing.forEach(it => q.push(`Your quote leaves out ${it.name.toLowerCase()}. Is it included elsewhere, and what will it cost?`));
+  c.above.forEach(it => q.push(`${it.name} is above the typical price. What explains the difference?`));
+  if (F.depositPct > 20) q.push(`Can the deposit be 20% or less, with later payments tied to finished work?`);
+  if (!F.completion) q.push(`Can you add a completion date, and say what happens if it slips?`);
+  if (F.escalation) q.push(`Can you fix the prices, or cap any increase?`);
+  if (F.cancelFee > 0) q.push(`Can the ${fmt(F.cancelFee)} cancellation fee be reduced or removed?`);
+  if (!F.drc) q.push(`Which contractor in HDB's directory will carry out the works?`);
+  if (!F.casetrust) q.push(`How is my deposit protected if the project stops?`);
+  q.push(`What does your warranty cover, and for how long?`);
+  $("r-qhead").textContent = `Ask ${F.name} before signing`;
+  $("r-qs").innerHTML = q.map(x => `<li>${esc(x)}</li>`).join("");
+}
+document.addEventListener("change", e => {
+  const o = e.target.dataset.opt;
+  if (o) { e.target.checked ? chosen.add(o) : chosen.delete(o); renderPlan(); }
+  if (e.target.id === "r-firmsel") { planFirm = +e.target.value; chosen.clear(); renderPlan(); }
+});
+function showRTab(k) {
+  reportTab = k;
+  document.querySelectorAll("[data-rt]").forEach(b => markTab(b, b.dataset.rt === k));
+  document.querySelectorAll("[data-rp]").forEach(p => p.hidden = p.dataset.rp !== k);
+}
+document.querySelectorAll("[data-rt]").forEach(b => b.addEventListener("click", () => showRTab(b.dataset.rt)));
+
+/* ---------------- milestones ---------------- */
+const openDefects = () => S.defects.filter(d => d.status !== "Checked").length;
+const changeTotal = () => S.records.filter(r => r.type === "Change order").reduce((a, r) => a + (Number(r.amt) || 0), 0);
+function contractValue() { const f = Math.min(S.signed || 0, S.firms.length - 1); return calc(f).quoted + changeTotal(); }
+function msReady(m) { return m.done.every(Boolean) && (!m.final || openDefects() === 0); }
+
+function renderMs() {
+  if (S.signed >= S.firms.length) S.signed = 0;
+  $("ms-firm").innerHTML = S.firms.map((F, f) => `<option value="${f}" ${f === S.signed ? "selected" : ""}>${esc(F.name)}</option>`).join("");
+  const cv = contractValue();
+  // A paid milestone keeps what it actually cost; only unpaid ones follow the
+  // contract value as change orders come in.
+  const amt = m => (m.paid && typeof m.paidAmt === "number") ? m.paidAmt : cv * m.pct / 100;
+  const paid = S.milestones.filter(m => m.paid).reduce((a, m) => a + amt(m), 0);
+  const ready = S.milestones.filter(m => !m.paid && msReady(m)).reduce((a, m) => a + amt(m), 0);
+  const pctTotal = S.milestones.reduce((a, m) => a + Number(m.pct), 0);
+  $("ms-sum").innerHTML = `
+    <div><span class="lbl">Contract value</span><span class="num">${fmt(cv)}</span><span class="small muted">incl. ${fmt(changeTotal())} changes</span></div>
+    <div><span class="lbl">Paid so far</span><span class="num">${fmt(paid)}</span><span class="small muted">${cv ? Math.round(paid / cv * 100) : 0}% of contract</span></div>
+    <div><span class="lbl">Ready to pay</span><span class="num">${fmt(ready)}</span><span class="small muted">work checked</span></div>
+    <div><span class="lbl">Still to pay</span><span class="num">${fmt(cv - paid)}</span><span class="small ${cv > S.budget ? "" : "muted"}" style="${cv > S.budget ? "color:var(--bad)" : ""}">${cv > S.budget ? fmt(cv - S.budget) + " over budget" : fmt(S.budget - cv) + " under budget"}</span></div>`;
+
+  $("ms-list").innerHTML = (pctTotal !== 100 ? `<p class="pill p-warn">Milestones add up to ${pctTotal}%, not 100%</p>` : "") + S.milestones.map((m, i) => {
+    const ok = msReady(m), od = openDefects();
+    const status = m.paid ? ["p-ok", "Paid"] : ok ? ["p-acc", "Ready to pay"] : ["p-warn", "Check the work"];
+    const items = m.checks.map((c, j) => `<li class="ck"><label class="tog"><input type="checkbox" data-msc="${i}_${j}" ${m.done[j] ? "checked" : ""} ${m.paid ? "disabled" : ""}><span>${esc(c)}</span></label></li>`).join("")
+      + (m.final ? `<li><span class="ic ${od ? "bad" : "ok"}" role="img" aria-label="${od ? "Problem" : "OK"}">${od ? "✕" : "✓"}</span><span>${od ? `${od} defect${od > 1 ? "s" : ""} not yet checked` : "All defects checked"}<small>From your defect list</small></span></li>` : "");
+    return `<section class="card ms">
+      <div class="ms-top"><h3>${i + 1}. ${esc(m.name)}</h3><span class="pill ${status[0]}">${status[1]}</span></div>
+      <ul class="checks" style="margin:0">${items}</ul>
+      <div class="ms-foot"><span><span class="num">${fmt(amt(m))}</span> <span class="muted small">(${esc(m.pct)}%)</span></span>
+        ${m.paid ? `<button type="button" class="linkbtn" data-unpay="${i}">Undo payment</button>`
+                 : `<button type="button" class="btn sm" data-pay="${i}" ${ok ? "" : "disabled"}>${ok ? "Mark as paid" : "Finish checks to pay"}</button>`}</div>
+    </section>`;
+  }).join("");
+}
+$("ms-firm").addEventListener("change", e => { S.signed = +e.target.value; save(); renderMs(); });
+document.addEventListener("change", e => {
+  const k = e.target.dataset.msc;
+  if (k) { const [i, j] = k.split("_").map(Number); S.milestones[i].done[j] = e.target.checked; save(); renderMs(); }
+});
+document.addEventListener("click", e => {
+  const p = e.target.closest("[data-pay]");
+  if (p && !p.disabled) {
+    const m = S.milestones[+p.dataset.pay];
+    const due = contractValue() * m.pct / 100;
+    m.paid = true; m.paidAmt = due;
+    S.records.push({ date: today(), type: "Payment", title: `Paid: ${m.name}`, note: `${fmt(due)} (${m.pct}%) after checks were completed.`, amt: 0 });
+    save(); renderMs(); toast("Payment logged in Records"); return;
+  }
+  const u = e.target.closest("[data-unpay]");
+  if (u) { const m = S.milestones[+u.dataset.unpay]; m.paid = false; delete m.paidAmt; save(); renderMs(); }
+});
+
+/* ---------------- records ---------------- */
+function today() { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); }
+const recPill = { "Agreement": "p-acc", "Change order": "p-warn", "Photo note": "p-ok", "Payment": "p-ok", "Issue": "p-bad" };
+function renderRec() {
+  const q = $("rc-q").value.trim().toLowerCase(), f = $("rc-f").value;
+  const list = S.records.map((r, i) => ({ r, i }))
+    .filter(({ r }) => (!f || r.type === f) && (!q || (r.title + " " + r.note).toLowerCase().includes(q)))
+    .sort((a, b) => b.r.date.localeCompare(a.r.date) || b.i - a.i);
+  const ct = changeTotal();
+  $("rc-chg").textContent = `Changes so far: ${ct >= 0 ? "+" : "−"}${fmt(Math.abs(ct))}`;
+  $("rc-head").textContent = `Timeline (${list.length})`;
+  $("rc-list").innerHTML = list.length ? list.map(({ r, i }) => `<li class="rec-item">
+      <div><b>${esc(r.title)}</b><div class="meta">${esc(r.date)} · <span class="pill ${recPill[r.type] || "p-acc"}">${esc(r.type)}</span>${r.amt ? ` · <span class="num">${r.amt > 0 ? "+" : "−"}${fmt(Math.abs(r.amt))}</span>` : ""}</div></div>
+      <div class="row-actions"><button type="button" class="icon-btn" data-delrec="${i}" aria-label="Delete ${esc(r.title)}">×</button></div>
+      ${r.note ? `<p>${esc(r.note)}</p>` : ""}</li>`).join("")
+    : `<li class="empty">No records match.</li>`;
+}
+$("rc-q").addEventListener("input", renderRec);
+$("rc-f").addEventListener("change", renderRec);
+$("rc-add").addEventListener("click", () => {
+  const title = $("rc-title").value.trim();
+  if (!title) { $("rc-title").focus(); toast("Add a title first"); return; }
+  S.records.push({ date: $("rc-date").value || today(), type: $("rc-type").value, title, note: $("rc-note").value.trim(), amt: Number($("rc-amt").value) || 0 });
+  ["rc-title", "rc-note", "rc-amt"].forEach(id => $(id).value = "");
+  save(); renderRec(); toast("Record saved");
+});
+document.addEventListener("click", e => {
+  const d = e.target.closest("[data-delrec]");
+  if (d) { S.records.splice(+d.dataset.delrec, 1); save(); renderRec(); }
+});
+
+/* ---------------- defects ---------------- */
+const nextStatus = { Open: "Fixed", Fixed: "Checked", Checked: "Open" };
+const defPill = { Open: "p-bad", Fixed: "p-warn", Checked: "p-ok" };
+function renderDef() {
+  const od = openDefects(), major = S.defects.filter(d => d.status !== "Checked" && d.sev === "Major").length;
+  $("df-verdict").innerHTML = `<div class="badge" aria-hidden="true">${od ? "!" : "✓"}</div>
+    <div><h2>${od ? "Hold the final payment" : "Ready for handover"}</h2><p>${od ? `${od} defect${od > 1 ? "s" : ""} still to fix or check${major ? `, including ${major} major` : ""}.` : "Every defect has been fixed and checked."}</p></div>
+    <div class="count"><span class="num">${od}</span>open</div>`;
+  $("df-list").innerHTML = S.defects.length ? S.defects.map((d, i) => `<li class="def-item">
+      <div><b>${esc(d.desc)}</b><div class="meta">${esc(d.room)} · ${d.sev === "Major" ? '<span class="pill p-bad">Major</span>' : '<span class="pill p-acc">Minor</span>'}</div></div>
+      <div class="row-actions"><button type="button" class="btn ghost sm" data-defst="${i}" aria-label="Status ${esc(d.status)}, change to ${esc(nextStatus[d.status] || "Open")}"><span class="pill ${defPill[d.status] || "p-bad"}">${esc(d.status)}</span> →</button>
+      <button type="button" class="icon-btn" data-deldef="${i}" aria-label="Delete ${esc(d.desc)}">×</button></div></li>`).join("")
+    : `<li class="empty">No defects logged.</li>`;
+}
+$("df-add").addEventListener("click", () => {
+  const desc = $("df-desc").value.trim();
+  if (!desc) { $("df-desc").focus(); toast("Describe the defect first"); return; }
+  S.defects.push({ room: $("df-room").value, desc, sev: $("df-sev").value, status: "Open" });
+  $("df-desc").value = ""; save(); renderDef(); toast("Defect added");
+});
+document.addEventListener("click", e => {
+  const s = e.target.closest("[data-defst]");
+  if (s) { const d = S.defects[+s.dataset.defst]; d.status = nextStatus[d.status]; save(); renderDef(); return; }
+  const x = e.target.closest("[data-deldef]");
+  if (x) { S.defects.splice(+x.dataset.deldef, 1); save(); renderDef(); }
+});
+$("df-copy").addEventListener("click", () => {
+  const open = S.defects.filter(d => d.status !== "Checked");
+  const text = open.length ? `Defects to fix before final payment (${S.owner || "homeowner"}):\n` + open.map((d, i) => `${i + 1}. ${d.room}: ${d.desc} (${d.sev}, ${d.status})`).join("\n") : "No open defects.";
+  try { navigator.clipboard.writeText(text).then(() => toast("Defect list copied"), () => toast("Copy not available here")); } catch (_) { toast("Copy not available here"); }
+});
+
+/* ---------------- tab plumbing ---------------- */
+// ARIA tabs: exactly one tab per tablist is in the tab order, and arrow keys
+// move between them. Without this a keyboard user has to tab through all five.
+function markTab(b, on) { b.setAttribute("aria-selected", on); b.tabIndex = on ? 0 : -1; }
+function wireTablist(el) {
+  el.addEventListener("keydown", e => {
+    const tabs = [...el.querySelectorAll('[role="tab"]')];
+    const i = tabs.indexOf(document.activeElement), last = tabs.length - 1;
+    if (i < 0) return;
+    let j;
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") j = i === last ? 0 : i + 1;
+    else if (e.key === "ArrowLeft" || e.key === "ArrowUp") j = i === 0 ? last : i - 1;
+    else if (e.key === "Home") j = 0;
+    else if (e.key === "End") j = last;
+    else return;
+    e.preventDefault();
+    tabs[j].focus(); tabs[j].click();
+    // Switching firms re-renders the tablist, so re-find the button by position.
+    const after = [...el.querySelectorAll('[role="tab"]')][j];
+    if (after && after !== document.activeElement) after.focus();
+  });
+}
+document.querySelectorAll('[role="tablist"]').forEach(wireTablist);
+
+/* ---------------- top tabs ---------------- */
+const PANES = { enter: "pane-enter", report: "pane-report", ms: "pane-ms", rec: "pane-rec", def: "pane-def" };
+let currentTab = "enter";
+function showTab(which) {
+  currentTab = which;
+  Object.entries(PANES).forEach(([k, id]) => { $(id).hidden = k !== which; });
+  document.querySelectorAll("[data-tab]").forEach(b => markTab(b, b.dataset.tab === which));
+  if (which === "report") renderReport();
+  if (which === "ms") renderMs();
+  if (which === "rec") { if (!$("rc-date").value) $("rc-date").value = today(); renderRec(); }
+  if (which === "def") renderDef();
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll("[data-tab]").forEach(b => b.addEventListener("click", () => showTab(b.dataset.tab)));
+$("edit-back").addEventListener("click", () => { showTab("enter"); showWiz(2); });
+
+/* ---------------- copy + toast ---------------- */
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 1800); }
+$("copy").addEventListener("click", () => {
+  const text = [...document.querySelectorAll("#r-qs li")].map((li, i) => `${i + 1}. ${li.textContent}`).join("\n");
+  const fallback = () => { const r = document.createRange(); r.selectNodeContents($("r-qs")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast("Selected. Press Ctrl+C to copy."); };
+  try { navigator.clipboard.writeText(text).then(() => toast("Questions copied"), fallback); } catch (_) { fallback(); }
+});
+
+route();
+</script>
+
+</body></html>
