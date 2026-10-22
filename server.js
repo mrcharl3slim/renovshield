@@ -3,6 +3,7 @@
 const path = require("path");
 const crypto = require("crypto");
 const express = require("express");
+const nodemailer = require("nodemailer");
 const { Pool } = require("pg");
 
 const PORT = process.env.PORT || 3000;
@@ -32,7 +33,48 @@ async function migrate() {
   // and a JSON round-trip through JS Date truncates to milliseconds, so the
   // value sent back would never match.
   await pool.query(`ALTER TABLE projects ADD COLUMN IF NOT EXISTS rev INTEGER NOT NULL DEFAULT 1`);
+  // Optional recovery address. The project link is still the key; this is the
+  // safety net for someone who loses it.
+  await pool.query(`ALTER TABLE projects ADD COLUMN IF NOT EXISTS owner_email TEXT`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS projects_owner_email_idx ON projects (lower(owner_email))`);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS recovery_tokens (
+      token      TEXT PRIMARY KEY,
+      email      TEXT NOT NULL,
+      expires_at TIMESTAMPTZ NOT NULL
+    )`);
+  await pool.query(`DELETE FROM recovery_tokens WHERE expires_at < now()`);
 }
+
+/* ---------------- email ---------------- */
+// Gmail SMTP: works with an app password and no verified domain, which suits a
+// demo. Unconfigured, the link is logged instead so the flow still works locally.
+const mailer = (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD)
+  ? nodemailer.createTransport({
+      service: "gmail",
+      auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD },
+    })
+  : null;
+if (!mailer) console.warn("GMAIL_USER / GMAIL_APP_PASSWORD not set - recovery links will be logged, not emailed.");
+
+async function sendMail(to, subject, body) {
+  if (!mailer) {
+    console.log(`[email not configured] would send to ${to}\n--- ${subject} ---\n${body}\n---`);
+    return false;
+  }
+  await mailer.sendMail({ from: `RenovShield <${process.env.GMAIL_USER}>`, to, subject, text: body });
+  return true;
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const validEmail = e => typeof e === "string" && e.length <= 254 && EMAIL_RE.test(e);
+// j••••@gmail.com - enough to recognise your own address, not enough to harvest.
+function maskEmail(e) {
+  if (!e) return null;
+  const [user, domain] = e.split("@");
+  return user.slice(0, 1) + "•".repeat(Math.max(3, Math.min(8, user.length - 1))) + "@" + domain;
+}
+const origin = req => `${req.protocol}://${req.get("host")}`;
 
 const app = express();
 // Render terminates TLS at its own proxy; without this every request looks like
@@ -125,22 +167,39 @@ function validProject(d) {
     opt(d.defects, v => arr(v, 500, validDefect));
 }
 
-// Simple per-IP limit on project creation (protects the free database from spam).
+// Simple sliding-window limits (protect the free database, and keep the mailer
+// from being used to spam a third party).
 const HOUR = 60 * 60 * 1000;
-const createHits = new Map();
-function createLimit(req, res, next) {
-  const now = Date.now(), ip = req.ip;
-  const hits = (createHits.get(ip) || []).filter(t => now - t < HOUR);
-  if (hits.length >= 30) return res.status(429).json({ error: "Too many new projects. Try again later." });
-  hits.push(now); createHits.set(ip, hits); next();
+const buckets = new Map();
+function rateLimit(name, max, windowMs, message, keyOf = req => req.ip) {
+  const hits = new Map();
+  buckets.set(name, [hits, windowMs]);
+  return (req, res, next) => {
+    const key = keyOf(req);
+    if (key === undefined || key === null) return next();
+    const now = Date.now();
+    const live = (hits.get(key) || []).filter(t => now - t < windowMs);
+    if (live.length >= max) return res.status(429).json({ error: message });
+    live.push(now); hits.set(key, live); next();
+  };
 }
-// An IP that visits once and never returns would otherwise keep its entry forever.
+const createLimit = rateLimit("create", 30, HOUR, "Too many new projects. Try again later.");
+// Two limits on recovery: one stops an IP hammering the endpoint, the other
+// stops anyone using it to mail-bomb a single address.
+const recoverIpLimit = rateLimit("recover-ip", 10, HOUR, "Too many recovery requests. Try again later.");
+const recoverEmailLimit = rateLimit("recover-email", 5, HOUR, "Too many recovery requests for that address. Try again later.",
+  req => (req.body && typeof req.body.email === "string") ? req.body.email.trim().toLowerCase() : null);
+
+// A key that is used once and never again would otherwise live forever.
 setInterval(() => {
   const now = Date.now();
-  for (const [ip, hits] of createHits) {
-    const live = hits.filter(t => now - t < HOUR);
-    if (live.length) createHits.set(ip, live); else createHits.delete(ip);
+  for (const [hits, windowMs] of buckets.values()) {
+    for (const [key, times] of hits) {
+      const live = times.filter(t => now - t < windowMs);
+      if (live.length) hits.set(key, live); else hits.delete(key);
+    }
   }
+  pool.query("DELETE FROM recovery_tokens WHERE expires_at < now()").catch(e => console.error(e));
 }, HOUR).unref();
 
 app.get("/healthz", async (_req, res) => {
@@ -158,9 +217,13 @@ app.post("/api/projects", createLimit, h(async (req, res) => {
 
 app.get("/api/projects/:id", h(async (req, res) => {
   if (!ID_RE.test(req.params.id)) return res.status(404).json({ error: "Not found." });
-  const r = await pool.query("SELECT data, rev, updated_at FROM projects WHERE id = $1", [req.params.id]);
+  const r = await pool.query("SELECT data, rev, updated_at, owner_email FROM projects WHERE id = $1", [req.params.id]);
   if (!r.rowCount) return res.status(404).json({ error: "Not found." });
-  res.json({ data: r.rows[0].data, rev: r.rows[0].rev, updatedAt: r.rows[0].updated_at });
+  res.json({
+    data: r.rows[0].data, rev: r.rows[0].rev, updatedAt: r.rows[0].updated_at,
+    // Masked: anyone holding the link can read this, and it is someone's address.
+    recoveryEmail: maskEmail(r.rows[0].owner_email),
+  });
 }));
 
 // Saving. A caller that sends the rev it last saw only wins if nothing else has
@@ -196,12 +259,74 @@ app.put("/api/projects/:id", saveProject);
 // navigator.sendBeacon, which the page uses on unload, can only issue a POST.
 app.post("/api/projects/:id", saveProject);
 
+/* ---------------- recovery ---------------- */
+
+// Attach or clear the address this project can be recovered to.
+app.put("/api/projects/:id/email", h(async (req, res) => {
+  if (!ID_RE.test(req.params.id)) return res.status(404).json({ error: "Not found." });
+  const raw = req.body && req.body.email;
+  const email = raw === null || raw === "" ? null : (typeof raw === "string" ? raw.trim() : raw);
+  if (email !== null && !validEmail(email)) return res.status(400).json({ error: "That doesn't look like an email address." });
+  const r = await pool.query("UPDATE projects SET owner_email = $2 WHERE id = $1 RETURNING owner_email", [req.params.id, email]);
+  if (!r.rowCount) return res.status(404).json({ error: "Not found." });
+
+  if (email) {
+    const link = `${origin(req)}/p/${req.params.id}`;
+    try {
+      await sendMail(email, "Your RenovShield project link",
+        `Here is the link to your RenovShield project. Keep this email — the link is the only way back in.\n\n${link}\n\n` +
+        `Anyone with the link can view and edit the project, so share it only with people you trust.\n\n` +
+        `Lost it later? Go to ${origin(req)} and choose "Lost your link?".`);
+    } catch (e) {
+      // The address is saved either way; recovery by email still works.
+      console.error("Could not send project link:", e.message);
+      return res.json({ recoveryEmail: maskEmail(email), emailed: false });
+    }
+  }
+  res.json({ recoveryEmail: maskEmail(email), emailed: Boolean(email) });
+}));
+
+// Ask for your projects. Always answers the same way, so this cannot be used to
+// find out whether an address has projects here.
+app.post("/api/recover", recoverIpLimit, recoverEmailLimit, h(async (req, res) => {
+  const email = req.body && typeof req.body.email === "string" ? req.body.email.trim() : "";
+  if (!validEmail(email)) return res.status(400).json({ error: "That doesn't look like an email address." });
+
+  const r = await pool.query("SELECT 1 FROM projects WHERE lower(owner_email) = lower($1) LIMIT 1", [email]);
+  if (r.rowCount) {
+    const token = crypto.randomBytes(32).toString("base64url");
+    await pool.query("INSERT INTO recovery_tokens (token, email, expires_at) VALUES ($1, $2, now() + interval '30 minutes')", [token, email]);
+    try {
+      await sendMail(email, "Your RenovShield projects",
+        `Here is a link to the RenovShield projects saved under this address. It works for 30 minutes.\n\n` +
+        `${origin(req)}/recover/${token}\n\n` +
+        `If you didn't ask for this, you can ignore this email — nothing has changed.`);
+    } catch (e) { console.error("Could not send recovery email:", e.message); }
+  }
+  res.json({ ok: true });
+}));
+
+// Redeem a recovery link. Valid for 30 minutes, reusable within that window so a
+// refresh doesn't strand anyone.
+app.get("/api/recover/:token", h(async (req, res) => {
+  const t = await pool.query("SELECT email FROM recovery_tokens WHERE token = $1 AND expires_at > now()", [req.params.token]);
+  if (!t.rowCount) return res.status(404).json({ error: "That link has expired. Ask for a new one." });
+  const email = t.rows[0].email;
+  const r = await pool.query(
+    `SELECT id, data->>'owner' AS owner, updated_at FROM projects
+     WHERE lower(owner_email) = lower($1) ORDER BY updated_at DESC LIMIT 50`, [email]);
+  res.json({
+    email: maskEmail(email),
+    projects: r.rows.map(p => ({ id: p.id, owner: p.owner || "", updatedAt: p.updated_at })),
+  });
+}));
+
 app.use("/api", (_req, res) => res.status(404).json({ error: "Not found." }));
 
 // Front end: one page that shows the site at "/" and the app at "/p/<id>".
 const indexFile = path.join(__dirname, "public", "index.html");
 app.use(express.static(path.join(__dirname, "public"), { index: false }));
-app.get(["/", "/p/:id"], (_req, res) => res.sendFile(indexFile));
+app.get(["/", "/p/:id", "/recover/:token"], (_req, res) => res.sendFile(indexFile));
 // Customer journey map. Also reachable at /journey.html via the static handler.
 app.get("/journey", (_req, res) => res.sendFile(path.join(__dirname, "public", "journey.html")));
 app.use((_req, res) => res.status(404).sendFile(indexFile));

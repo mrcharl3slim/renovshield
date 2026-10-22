@@ -312,6 +312,21 @@ textarea { resize: vertical; min-height: 60px; }
 .filters { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
 .filters input { flex: 1; min-width: 160px; }
 .filters select { width: auto; }
+/* ---------- keeping hold of a project ---------- */
+.recent { background: var(--accent-soft); border-bottom: 1px solid var(--line); }
+.recent .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; padding-block: 10px; font-size: .94rem; }
+.recent .lbl { font-weight: 700; }
+.chiplink { display: inline-block; padding: 4px 11px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--accent); font-weight: 600; text-decoration: none; }
+.chiplink:hover { border-color: var(--accent); }
+.nudge { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 16px; border: 1px solid var(--accent); border-radius: 10px; background: var(--accent-soft); }
+.nudge p { flex: 1; min-width: 220px; font-size: .97rem; }
+.proj-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.proj-list a { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); text-decoration: none; }
+.proj-list a:hover { border-color: var(--accent); }
+.proj-list .when { font-size: .86rem; color: var(--muted); }
+.firm-actions { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; align-items: center; margin-top: 4px; }
+.danger { color: var(--bad); }
+
 dialog { border: 1px solid var(--line); border-radius: 14px; padding: 24px; max-width: 420px; width: calc(100% - 32px); background: var(--surface); color: var(--ink); }
 dialog::backdrop { background: rgba(10, 18, 16, .5); }
 dialog .btn { justify-content: center; }
@@ -333,6 +348,10 @@ dialog .btn { justify-content: center; }
       <a class="btn sm" href="#start" data-start>Open the app</a>
     </div>
   </header>
+
+  <div class="recent" id="recent-strip" hidden>
+    <div class="wrap"><span class="lbl">Your projects on this device:</span><span id="recent-links"></span></div>
+  </div>
 
   <section class="hero" id="top">
     <div class="wrap">
@@ -515,7 +534,7 @@ dialog .btn { justify-content: center; }
         <button type="button" role="tab" id="tab-rec" data-tab="rec" aria-controls="pane-rec" aria-selected="false" tabindex="-1" aria-label="Records, during works">Records</button>
         <button type="button" role="tab" id="tab-def" data-tab="def" aria-controls="pane-def" aria-selected="false" tabindex="-1" aria-label="Defects, during works">Defects</button>
       </div>
-      <div class="right"><span class="small muted" id="save-status" aria-live="polite"></span><button type="button" class="btn ghost sm" id="copy-link">Copy project link</button><button type="button" class="linkbtn" id="reset">Reset to example</button></div>
+      <div class="right"><span class="small muted" id="save-status" aria-live="polite"></span><button type="button" class="btn ghost sm" id="recovery-btn">Save my link</button><button type="button" class="btn ghost sm" id="copy-link">Copy project link</button><button type="button" class="linkbtn" id="reset">Reset to example</button></div>
     </div>
   </header>
 
@@ -549,6 +568,10 @@ dialog .btn { justify-content: center; }
       <p class="sub">Answer from each quotation and contract.</p>
       <div class="seg" id="firm-seg" role="tablist" aria-label="Firm"></div>
       <div id="firm-editor" class="stack" role="tabpanel" aria-labelledby="seg0"></div>
+      <div class="firm-actions">
+        <button type="button" class="btn ghost sm" id="add-firm">+ Add a firm</button>
+        <button type="button" class="linkbtn danger" id="remove-firm">Remove this firm</button>
+      </div>
     </section>
 
     <section class="card wiz-pane" data-pane="2" hidden>
@@ -570,6 +593,11 @@ dialog .btn { justify-content: center; }
     <div class="app-head">
       <h1 id="r-title">Your review</h1>
       <button type="button" class="btn ghost sm" id="edit-back">← Edit quotes</button>
+    </div>
+    <div class="nudge" id="recovery-nudge" hidden>
+      <p><b>Keep this project.</b> There are no accounts — this link is the only way back in. Email it to yourself so a closed tab doesn't lose it.</p>
+      <button type="button" class="btn sm" id="nudge-save">Email me the link</button>
+      <button type="button" class="linkbtn" id="nudge-dismiss">Not now</button>
     </div>
     <div class="verdict" id="r-verdict"></div>
     <div class="g3" id="r-firms"></div>
@@ -676,22 +704,64 @@ dialog .btn { justify-content: center; }
   <form method="dialog" class="stack">
     <h2 id="start-h" class="pane-h">Start a project</h2>
     <p class="muted">You'll get a private link to your project. Anyone with the link can view and edit it, so share it only with people you trust.</p>
+    <div class="stack" id="dlg-recent" hidden>
+      <span class="lbl">Carry on with</span>
+      <ul class="proj-list" id="dlg-recent-list"></ul>
+      <span class="lbl" style="margin-top:6px">Or start fresh</span>
+    </div>
     <div class="stack">
       <button type="button" class="btn" data-new="example">Start with John's example</button>
       <button type="button" class="btn ghost" data-new="blank">Start blank</button>
     </div>
-    <button value="cancel" class="linkbtn" style="align-self:flex-start">Cancel</button>
+    <div class="row-between">
+      <button value="cancel" class="linkbtn">Cancel</button>
+      <button type="button" class="linkbtn" id="open-recover">Lost your link?</button>
+    </div>
   </form>
 </dialog>
 
 <div id="loading" class="narrow app-main" hidden><p class="muted">Loading your project…</p></div>
+<div id="recovered" class="narrow app-main" hidden>
+  <h1 class="pane-h">Your projects</h1>
+  <p class="muted" id="rec-sub"></p>
+  <ul class="proj-list" id="rec-list" style="margin-top:18px"></ul>
+  <p class="note" style="margin-top:16px">Bookmark the one you want, or email yourself the link again from inside it.</p>
+  <p style="margin-top:14px"><a class="btn ghost" href="/">Home</a></p>
+</div>
+
 <div id="notfound" class="narrow app-main" hidden>
   <h1 class="pane-h" id="nf-head">Project not found</h1>
   <p class="muted" id="nf-body">Check the link, or start a new project.</p>
   <p><button type="button" class="btn" id="nf-retry" hidden>Try again</button>
      <a class="btn" href="#start" data-start id="nf-new">Start a project</a>
      <a class="btn ghost" href="/">Home</a></p>
+  <p><button type="button" class="linkbtn" id="nf-recover">Lost your link?</button></p>
 </div>
+
+<dialog id="email-dlg" aria-labelledby="email-h">
+  <div class="stack">
+    <h2 id="email-h" class="pane-h">Email me this link</h2>
+    <p class="muted">We'll send the project link to this address and remember it, so you can ask for your projects again if you lose the link. We won't email you anything else.</p>
+    <div class="field"><label for="email-input">Your email</label><input type="email" id="email-input" placeholder="you@example.com" autocomplete="email"></div>
+    <p class="note" id="email-msg" hidden></p>
+    <button type="button" class="btn" id="email-save">Send me the link</button>
+    <div class="row-between">
+      <button type="button" class="linkbtn" id="email-close">Close</button>
+      <button type="button" class="linkbtn danger" id="email-remove" hidden>Remove recovery email</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="recover-dlg" aria-labelledby="recover-h">
+  <div class="stack">
+    <h2 id="recover-h" class="pane-h">Lost your link?</h2>
+    <p class="muted">If you saved a recovery email, we'll send you a link to your projects. It works for 30 minutes.</p>
+    <div class="field"><label for="recover-input">Your email</label><input type="email" id="recover-input" placeholder="you@example.com" autocomplete="email"></div>
+    <p class="note" id="recover-msg" hidden></p>
+    <button type="button" class="btn" id="recover-send">Send me my projects</button>
+    <button type="button" class="linkbtn" id="recover-close" style="align-self:flex-start">Close</button>
+  </div>
+</dialog>
 
 <dialog id="conflict-dlg" aria-labelledby="conflict-h">
   <div class="stack">
@@ -759,7 +829,42 @@ function blankProject() {
   b.records = []; b.defects = [];
   return b;
 }
-let S = clone(SAMPLE), projectId = null;
+let S = clone(SAMPLE), projectId = null, recoveryEmail = null;
+
+/* ---------------- remembering projects on this device ---------------- */
+// The link is the only key. This is the free half of not losing it: it costs
+// nothing, needs no email, and covers the common case of a closed tab.
+const RECENT_KEY = "renovshield.recent";
+function readRecent() {
+  try { const v = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]"); return Array.isArray(v) ? v : []; }
+  catch (_) { return []; }
+}
+function rememberProject(id, owner) {
+  try {
+    const list = readRecent().filter(p => p && p.id !== id);
+    list.unshift({ id, owner: owner || "", at: Date.now() });
+    localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, 8)));
+  } catch (_) {}
+}
+const projLabel = p => (p.owner ? p.owner.split(" ")[0] + "'s project" : "Untitled project");
+function whenLabel(ms) {
+  const d = Math.floor((Date.now() - ms) / 86400000);
+  return d <= 0 ? "today" : d === 1 ? "yesterday" : d + " days ago";
+}
+function renderRecent() {
+  const list = readRecent().filter(p => p && typeof p.id === "string");
+  const strip = $("recent-strip"), dlg = $("dlg-recent");
+  if (strip) {
+    strip.hidden = !list.length;
+    $("recent-links").innerHTML = list.slice(0, 5)
+      .map(p => `<a class="chiplink" href="/p/${esc(p.id)}">${esc(projLabel(p))}</a>`).join(" ");
+  }
+  if (dlg) {
+    dlg.hidden = !list.length;
+    $("dlg-recent-list").innerHTML = list.slice(0, 5).map(p =>
+      `<li><a href="/p/${esc(p.id)}"><span>${esc(projLabel(p))}</span><span class="when">${esc(whenLabel(p.at || Date.now()))}</span></a></li>`).join("");
+  }
+}
 
 /* ---------------- saving to the server ---------------- */
 // rev is the revision we last saw. The server rejects a save built on a stale
@@ -834,7 +939,7 @@ let wizStep = 0, activeFirm = 0, showDetail = false, reportTab = "prices";
 
 /* ---------------- routing ---------------- */
 function view(which) {
-  ["site", "app", "loading", "notfound"].forEach(id => { $(id).hidden = id !== which; });
+  ["site", "app", "loading", "notfound", "recovered"].forEach(id => { $(id).hidden = id !== which; });
 }
 // Fill in anything an older or hand-made project is missing, so no total comes out NaN.
 function normalise() {
@@ -856,8 +961,10 @@ function loadFailed(head, body, retry) {
   document.title = head + " · RenovShield";
 }
 async function route() {
+  const rec = location.pathname.match(/^\/recover\/([A-Za-z0-9_-]{20,100})\/?$/);
+  if (rec) return showRecovered(rec[1]);
   const m = location.pathname.match(/^\/p\/([A-Za-z0-9_-]{16,40})\/?$/);
-  if (!m) { view("site"); document.title = "RenovShield"; return; }
+  if (!m) { view("site"); document.title = "RenovShield"; renderRecent(); return; }
   view("loading");
   let r;
   try { r = await fetch(`/api/projects/${m[1]}`); }
@@ -868,12 +975,127 @@ async function route() {
   try { j = await r.json(); }
   catch (_) { return loadFailed("Something went wrong", "The server sent a reply we couldn't read.", true); }
   S = j.data; projectId = m[1]; rev = Number.isInteger(j.rev) ? j.rev : null;
+  recoveryEmail = j.recoveryEmail || null;
   normalise();
+  rememberProject(projectId, S.owner);
+  renderRecovery();
   document.title = (S.owner ? S.owner.split(" ")[0] + "'s project" : "My project") + " · RenovShield";
   view("app"); setStatus("All changes saved");
   renderProject(); renderFirms(); renderItems(); showWiz(0); showTab("enter");
 }
 $("nf-retry").addEventListener("click", () => route());
+
+async function showRecovered(token) {
+  view("loading");
+  let r;
+  try { r = await fetch(`/api/recover/${token}`); }
+  catch (_) { return loadFailed("Can't reach RenovShield", "Check your connection, then try again.", true); }
+  if (!r.ok) return loadFailed("That link has expired", "Recovery links last 30 minutes. Ask for a new one from the home page.", false);
+  const j = await r.json();
+  document.title = "Your projects · RenovShield";
+  $("rec-sub").textContent = j.projects.length
+    ? `${j.projects.length} project${j.projects.length > 1 ? "s" : ""} saved under ${j.email}.`
+    : `Nothing is saved under ${j.email} any more.`;
+  $("rec-list").innerHTML = j.projects.map(p =>
+    `<li><a href="/p/${esc(p.id)}"><span>${esc(p.owner ? p.owner.split(" ")[0] + "'s project" : "Untitled project")}</span>` +
+    `<span class="when">edited ${esc(whenLabel(Date.parse(p.updatedAt)))}</span></a></li>`).join("");
+  // Seed this device so the next visit needs no email at all.
+  j.projects.forEach(p => rememberProject(p.id, p.owner));
+  view("recovered");
+}
+
+/* ---------------- recovery email ---------------- */
+const NUDGED_KEY = "renovshield.nudged";
+function nudgeDismissed() { try { return (localStorage.getItem(NUDGED_KEY) || "").split(",").includes(projectId); } catch (_) { return false; } }
+function dismissNudge() {
+  try {
+    const seen = (localStorage.getItem(NUDGED_KEY) || "").split(",").filter(Boolean);
+    if (!seen.includes(projectId)) seen.push(projectId);
+    localStorage.setItem(NUDGED_KEY, seen.slice(-50).join(","));
+  } catch (_) {}
+  renderRecovery();
+}
+function renderRecovery() {
+  const btn = $("recovery-btn");
+  if (btn) {
+    btn.textContent = recoveryEmail ? `Saved to ${recoveryEmail}` : "Save my link";
+    btn.title = recoveryEmail ? "Change or remove the recovery email" : "Email yourself this project link";
+  }
+  const nudge = $("recovery-nudge");
+  if (nudge) nudge.hidden = Boolean(recoveryEmail) || nudgeDismissed();
+  const rm = $("email-remove");
+  if (rm) rm.hidden = !recoveryEmail;
+}
+function openEmailDialog() {
+  const d = $("email-dlg");
+  $("email-msg").hidden = true;
+  $("email-input").value = "";
+  $("email-input").placeholder = recoveryEmail ? recoveryEmail : "you@example.com";
+  renderRecovery();
+  if (d.showModal) { if (!d.open) d.showModal(); $("email-input").focus(); }
+}
+function msg(id, text, bad) {
+  const el = $(id);
+  el.textContent = text; el.hidden = false;
+  el.style.color = bad ? "var(--bad)" : "var(--ok)";
+}
+$("recovery-btn").addEventListener("click", openEmailDialog);
+$("nudge-save").addEventListener("click", openEmailDialog);
+$("nudge-dismiss").addEventListener("click", dismissNudge);
+$("email-close").addEventListener("click", () => $("email-dlg").close());
+$("email-save").addEventListener("click", async () => {
+  const email = $("email-input").value.trim();
+  if (!email) return msg("email-msg", "Enter an email address first.", true);
+  $("email-save").disabled = true;
+  try {
+    const r = await fetch(`/api/projects/${projectId}/email`, {
+      method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }),
+    });
+    const j = await r.json();
+    if (!r.ok) return msg("email-msg", j.error || "Could not save that address.", true);
+    recoveryEmail = j.recoveryEmail;
+    renderRecovery();
+    msg("email-msg", j.emailed ? "Sent. Check your inbox." : "Saved, but the email couldn't be sent. Recovery still works.", !j.emailed);
+    toast("Recovery email saved");
+  } catch (_) { msg("email-msg", "Could not reach RenovShield. Try again.", true); }
+  finally { $("email-save").disabled = false; }
+});
+$("email-remove").addEventListener("click", async () => {
+  try {
+    const r = await fetch(`/api/projects/${projectId}/email`, {
+      method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: null }),
+    });
+    if (!r.ok) return msg("email-msg", "Could not remove it. Try again.", true);
+    recoveryEmail = null; renderRecovery();
+    msg("email-msg", "Removed. This link is now the only way back in.", true);
+  } catch (_) { msg("email-msg", "Could not reach RenovShield. Try again.", true); }
+});
+
+function openRecoverDialog() {
+  const d = $("recover-dlg");
+  $("recover-msg").hidden = true; $("recover-input").value = "";
+  if (d.showModal) { if (!d.open) d.showModal(); $("recover-input").focus(); }
+}
+$("open-recover").addEventListener("click", () => { $("start-dlg").close(); openRecoverDialog(); });
+$("nf-recover").addEventListener("click", openRecoverDialog);
+$("recover-close").addEventListener("click", () => $("recover-dlg").close());
+$("recover-send").addEventListener("click", async () => {
+  const email = $("recover-input").value.trim();
+  if (!email) return msg("recover-msg", "Enter the email address you saved.", true);
+  $("recover-send").disabled = true;
+  try {
+    const r = await fetch("/api/recover", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }),
+    });
+    const j = await r.json();
+    if (r.status === 429) return msg("recover-msg", j.error, true);
+    if (!r.ok) return msg("recover-msg", j.error || "Could not send that.", true);
+    // Deliberately the same answer either way, so this can't be used to find out
+    // whether an address has projects here.
+    msg("recover-msg", "If that address has projects saved, the link is on its way. It works for 30 minutes.", false);
+  } catch (_) { msg("recover-msg", "Could not reach RenovShield. Try again.", true); }
+  finally { $("recover-send").disabled = false; }
+});
 
 /* ---------------- starting a project ---------------- */
 document.addEventListener("click", e => {
@@ -881,6 +1103,7 @@ document.addEventListener("click", e => {
   if (!a) return;
   e.preventDefault();
   const d = $("start-dlg");
+  renderRecent();
   if (d.showModal) d.showModal(); else createProject("example");
 });
 document.addEventListener("click", e => {
@@ -926,6 +1149,7 @@ function renderProject() { ["owner", "budget", "deposit", "buffer"].forEach(k =>
 function renderFirms() {
   $("firm-seg").innerHTML = S.firms.map((f, i) => `<button type="button" role="tab" id="seg${i}" data-seg="${i}" aria-controls="firm-editor" aria-selected="${i === activeFirm}" tabindex="${i === activeFirm ? 0 : -1}">${esc(f.name)}</button>`).join("");
   $("firm-editor").setAttribute("aria-labelledby", "seg" + activeFirm);
+  renderFirmActions();
   const f = S.firms[activeFirm], i = activeFirm;
   $("firm-editor").innerHTML = `
     <div class="field"><label for="fn">Firm name</label><input type="text" id="fn" data-fk="name" value="${esc(f.name)}"></div>
@@ -945,6 +1169,43 @@ function renderFirms() {
       ${i < S.firms.length - 1 ? `<button type="button" class="linkbtn" data-seg="${i + 1}">${esc(S.firms[i + 1].name)} →</button>` : ""}
     </div>`;
 }
+
+// Firms and every item's price list must stay the same length: the server
+// rejects a save where they disagree, and the report indexes one by the other.
+const MAX_FIRMS = 6;
+function addFirm() {
+  if (S.firms.length >= MAX_FIRMS) return toast(`Up to ${MAX_FIRMS} firms`);
+  const used = new Set(S.firms.map(f => f.name));
+  let name = "", i = 0;
+  do { name = "Firm " + String.fromCharCode(65 + i++); } while (used.has(name) && i < 26);
+  S.firms.push({ name, drc: false, casetrust: false, depositPct: 20, completion: false, escalation: false, cancelFee: 0 });
+  S.items.forEach(it => it.vals.push(null));
+  activeFirm = S.firms.length - 1;
+  save(); renderFirms(); renderItems(); renderFirmActions();
+  const el = $("fn"); if (el) { el.focus(); el.select(); }
+}
+function removeFirm(i) {
+  if (S.firms.length <= 1) return toast("You need at least one firm");
+  if (!confirm(`Remove ${S.firms[i].name} and its prices? This can't be undone.`)) return;
+  S.firms.splice(i, 1);
+  S.items.forEach(it => it.vals.splice(i, 1));
+  // Anything that pointed at a firm by index has to be brought back in range.
+  activeFirm = Math.max(0, Math.min(activeFirm, S.firms.length - 1));
+  if (typeof S.signed === "number") S.signed = S.signed === i ? 0 : S.signed > i ? S.signed - 1 : S.signed;
+  planFirm = null; chosen.clear();
+  save(); renderFirms(); renderItems(); renderFirmActions();
+  toast("Firm removed");
+}
+function renderFirmActions() {
+  const add = $("add-firm"), rm = $("remove-firm");
+  if (!add || !rm) return;
+  add.disabled = S.firms.length >= MAX_FIRMS;
+  add.title = add.disabled ? `Up to ${MAX_FIRMS} firms` : "";
+  rm.hidden = S.firms.length <= 1;
+  rm.textContent = `Remove ${S.firms[activeFirm] ? S.firms[activeFirm].name : "this firm"}`;
+}
+$("add-firm").addEventListener("click", addFirm);
+$("remove-firm").addEventListener("click", () => removeFirm(activeFirm));
 
 function renderItems() {
   const d = showDetail;
@@ -970,11 +1231,14 @@ $("show-detail").addEventListener("change", e => { showDetail = e.target.checked
 
 document.addEventListener("input", e => {
   const t = e.target;
-  if (t.dataset.k) S[t.dataset.k] = t.type === "number" ? Number(t.value) : t.value;
+  if (t.dataset.k) {
+    S[t.dataset.k] = t.type === "number" ? Number(t.value) : t.value;
+    if (t.dataset.k === "owner") rememberProject(projectId, S.owner);
+  }
   else if (t.dataset.fk) {
     const f = S.firms[activeFirm];
     f[t.dataset.fk] = t.type === "checkbox" ? t.checked : t.type === "number" ? Number(t.value) : t.value;
-    if (t.dataset.fk === "name") { const s = $("seg" + activeFirm); if (s) s.textContent = t.value; }
+    if (t.dataset.fk === "name") { const s = $("seg" + activeFirm); if (s) s.textContent = t.value; renderFirmActions(); }
   }
   else if (t.dataset.ik) { const it = S.items[+t.dataset.r]; it[t.dataset.ik] = t.type === "number" ? Number(t.value) : t.value; }
   else if (t.dataset.vf !== undefined) {
@@ -1310,7 +1574,7 @@ function showTab(which) {
   currentTab = which;
   Object.entries(PANES).forEach(([k, id]) => { $(id).hidden = k !== which; });
   document.querySelectorAll("[data-tab]").forEach(b => markTab(b, b.dataset.tab === which));
-  if (which === "report") renderReport();
+  if (which === "report") { renderReport(); renderRecovery(); }
   if (which === "ms") renderMs();
   if (which === "rec") { if (!$("rc-date").value) $("rc-date").value = today(); renderRec(); }
   if (which === "def") renderDef();

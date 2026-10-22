@@ -14,6 +14,13 @@ services:
         fromDatabase:
           name: renovshield-db
           property: connectionString
+      # Recovery email (Gmail SMTP). Set both in the Render dashboard; without
+      # them the app still runs and logs recovery links instead of sending them.
+      # GMAIL_APP_PASSWORD is a Google App Password, not your account password.
+      - key: GMAIL_USER
+        sync: false
+      - key: GMAIL_APP_PASSWORD
+        sync: false
 
 databases:
   - name: renovshield-db

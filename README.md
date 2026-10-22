@@ -8,6 +8,20 @@ Demo app for **Minimum Lovable Persons (Group 6)**. RenovShield helps first-time
 
 There are no accounts. Each project has a private link (`/p/<id>`). Anyone with the link can view and edit it, so the link is the only credential: the server sends `Referrer-Policy: no-referrer` and `Cache-Control: private, no-store` to keep it out of third-party referrers and shared caches.
 
+Because the link is the only way back in, two things guard against losing it:
+
+- **This device.** Projects you open are remembered in `localStorage` and offered
+  on the home page and in the start dialog. Costs nothing, needs no email.
+- **Recovery email.** You can attach an address to a project; we mail you the
+  link and, later, `Lost your link?` mails you everything saved under that
+  address. The recovery link lasts 30 minutes. The address is optional and is
+  only asked for after the review, so nothing blocks a first run.
+
+Recovery requests answer identically whether or not the address is known, so the
+endpoint cannot be used to discover who has projects here, and are rate limited
+per IP (10/hour) and per address (5/hour) so the mailer cannot be pointed at a
+third party.
+
 ## Run locally
 
 Needs Node 20+ and a Postgres database.
@@ -31,6 +45,14 @@ Notes on Render's free plan:
 
 If you connect with an external database URL, set `PGSSL=true`.
 
+### Sending recovery email
+
+Set `GMAIL_USER` and `GMAIL_APP_PASSWORD` (a Google
+[App Password](https://myaccount.google.com/apppasswords), not your account
+password; the account needs 2-Step Verification turned on). Leave them unset and
+everything still works — the server prints recovery links to its log instead of
+emailing them, which is fine for local development.
+
 ## API
 
 | Method | Path | Purpose |
@@ -39,6 +61,9 @@ If you connect with an external database URL, set `PGSSL=true`.
 | `GET` | `/api/projects/:id` | Load a project. Returns `{ data, rev, updatedAt }` |
 | `PUT` | `/api/projects/:id` | Save a project from `{ data, rev }`. Returns `{ rev, updatedAt }` |
 | `POST` | `/api/projects/:id` | Same as `PUT`; exists because `navigator.sendBeacon` can only POST |
+| `PUT` | `/api/projects/:id/email` | Attach or clear (`{ email: null }`) the recovery address. Mails the link |
+| `POST` | `/api/recover` | Ask for your projects from `{ email }`. Always answers `{ ok: true }` |
+| `GET` | `/api/recover/:token` | Redeem a recovery link. Valid 30 minutes, reusable within it |
 | `GET` | `/healthz` | Health check |
 
 `rev` is a revision counter. Send the one you last saw and the save only lands if
