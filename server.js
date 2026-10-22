@@ -228,8 +228,12 @@ setInterval(() => {
 }, HOUR).unref();
 
 app.get("/healthz", async (_req, res) => {
-  try { await pool.query("SELECT 1"); res.json({ ok: true }); }
-  catch (e) { res.status(500).json({ ok: false }); }
+  // mail reports only whether credentials are present - never what they are.
+  // Without it there is no way to tell an unconfigured mailer from a blocked
+  // SMTP port, since both just mean "the email didn't go".
+  const mail = mailer ? "configured" : "not configured";
+  try { await pool.query("SELECT 1"); res.json({ ok: true, mail }); }
+  catch (e) { res.status(500).json({ ok: false, mail }); }
 });
 
 app.post("/api/projects", createLimit, h(async (req, res) => {
