@@ -202,6 +202,8 @@ app.use("/api", (_req, res) => res.status(404).json({ error: "Not found." }));
 const indexFile = path.join(__dirname, "public", "index.html");
 app.use(express.static(path.join(__dirname, "public"), { index: false }));
 app.get(["/", "/p/:id"], (_req, res) => res.sendFile(indexFile));
+// Customer journey map. Also reachable at /journey.html via the static handler.
+app.get("/journey", (_req, res) => res.sendFile(path.join(__dirname, "public", "journey.html")));
 app.use((_req, res) => res.status(404).sendFile(indexFile));
 
 // Last-resort logging.

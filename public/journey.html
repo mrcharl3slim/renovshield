@@ -28,6 +28,7 @@
   --f-d: "Archivo", "Helvetica Neue", Arial, sans-serif;
   --f-b: "Source Sans 3", "Segoe UI", Arial, sans-serif;
   --f-m: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --bar: 53px;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #0d1412; --surface: #151e1a; --sunk: #1c2723;
@@ -127,7 +128,7 @@ section + section { border-top: 1px solid var(--hair); }
 /* ---------- stages ---------- */
 .stage { display: grid; grid-template-columns: 184px 1fr; gap: 30px; align-items: start; }
 .stage + .stage { margin-top: 10px; padding-top: 34px; border-top: 1px solid var(--hair); }
-.stage-rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 18px); display: flex; flex-direction: column; gap: 7px; }
+.stage-rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--bar) + 18px); display: flex; flex-direction: column; gap: 7px; }
 .stage-rail .when { font-family: var(--f-m); font-size: .74rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .stage-rail h3 { font-size: 1.32rem; font-weight: 800; }
 .stage-rail .dur { font-size: .9rem; color: var(--muted); }
@@ -190,9 +191,43 @@ section + section { border-top: 1px solid var(--hair); }
 .foot .wrap { padding-block: 26px 34px; display: flex; flex-direction: column; gap: 10px; }
 .foot p { font-size: .93rem; color: var(--muted); max-width: 60em; }
 .foot strong { color: var(--ink); font-weight: 700; }
+
+/* ---------- app bar: this page is served by RenovShield itself ---------- */
+.appbar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10;
+  background: var(--surface); border-bottom: 1px solid var(--line);
+}
+.appbar .wrap { display: flex; align-items: center; gap: 14px; padding-block: 11px; }
+.brand { display: flex; align-items: center; gap: 9px; text-decoration: none; color: inherit; }
+.brand .mk { width: 28px; height: 28px; border-radius: 7px; background: var(--accent); display: grid; place-items: center; flex: none; }
+.brand .mk svg { width: 17px; height: 17px; }
+.brand b { font-family: var(--f-d); font-weight: 800; font-size: 1.1rem; letter-spacing: -0.02em; }
+.appbar .back { margin-left: auto; font-size: .92rem; font-weight: 600; color: var(--accent); text-decoration: none; white-space: nowrap; }
+.appbar .back:hover { text-decoration: underline; }
+a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* reads as a clean handout when projected or saved to PDF */
+@media print {
+  .appbar { display: none; }
+  body { background: #fff; color: #000; }
+  section { padding-block: 24px; break-inside: avoid; }
+  .stage, .gatebox, .friction li { break-inside: avoid; }
+  .stage-rail { position: static; }
+}
 </style>
 </head>
 <body>
+<div class="appbar">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="RenovShield home">
+      <span class="mk" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M8 14.5l3 3 5-6"/></svg></span>
+      <b>RenovShield</b>
+    </a>
+    <a class="back" href="/">&larr; Back to the site</a>
+  </div>
+</div>
+
 <header class="mast">
   <div class="wrap">
     <span class="eyebrow">RenovShield · customer journey</span>
