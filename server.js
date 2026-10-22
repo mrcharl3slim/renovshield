@@ -270,20 +270,23 @@ app.put("/api/projects/:id/email", h(async (req, res) => {
   const r = await pool.query("UPDATE projects SET owner_email = $2 WHERE id = $1 RETURNING owner_email", [req.params.id, email]);
   if (!r.rowCount) return res.status(404).json({ error: "Not found." });
 
+  // emailed reflects what actually happened: sendMail returns false when no
+  // mailer is configured, and the UI must not claim an inbox has something in it.
+  let emailed = false;
   if (email) {
     const link = `${origin(req)}/p/${req.params.id}`;
     try {
-      await sendMail(email, "Your RenovShield project link",
+      emailed = await sendMail(email, "Your RenovShield project link",
         `Here is the link to your RenovShield project. Keep this email — the link is the only way back in.\n\n${link}\n\n` +
         `Anyone with the link can view and edit the project, so share it only with people you trust.\n\n` +
         `Lost it later? Go to ${origin(req)} and choose "Lost your link?".`);
     } catch (e) {
       // The address is saved either way; recovery by email still works.
       console.error("Could not send project link:", e.message);
-      return res.json({ recoveryEmail: maskEmail(email), emailed: false });
+      emailed = false;
     }
   }
-  res.json({ recoveryEmail: maskEmail(email), emailed: Boolean(email) });
+  res.json({ recoveryEmail: maskEmail(email), emailed });
 }));
 
 // Ask for your projects. Always answers the same way, so this cannot be used to
